@@ -1,0 +1,12 @@
+clear
+clc
+close all
+
+%System properties
+m = 100;
+b = 20;
+
+%Time properties
+Tf = 50
+Ts = 0.5;
+
