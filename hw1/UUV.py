@@ -2,6 +2,7 @@
 
 import numpy as np
 from control import matlab as mt
+import control as ctl
 
 
 class UUV():
@@ -22,7 +23,7 @@ class UUV():
         # Noise parameters
         self.sigma_pos_meas = 0.001  # m^2
         self.Q = self.sigma_pos_meas
-        self.sigma_vel = 0.01  # m^2/s^2
+        self.sigma_vel = 0.001  # m^2/s^2
         self.sigma_pos = 0.0001  # m^2
         self.R = np.diagflat([self.sigma_pos, self.sigma_vel])
 
@@ -37,7 +38,8 @@ class UUV():
                            [1. / self.m]])
         self.H = np.array([1., 0.])
         self.J = np.array([0.])
-        self.sysd = mt.ss(self.F, self.G, self.H, self.J, self.ts)
+        self.sys = mt.ss(self.F, self.G, self.H, self.J)
+        self.sysd = ctl.sample_system(self.sys, self.ts, 'tustin')
         self.A = self.sysd.A
         self.B = self.sysd.B
         self.C = self.sysd.C
@@ -50,10 +52,15 @@ class UUV():
         self.X = np.array([[0.],
                            [0.]])
 
+        # Measurements
+        self.z = 0. + np.random.randn() * np.sqrt(self.Q)
+
     def propagate_dynamics(self, u):
-        self.X = self.A @ self.X_1 + self.B @ u + process_noise
-        return self.X
+        self.X = self.A @ self.X_1 + self.B * u
+        self.mu = self.A @ self.X_1 + self.B * u + np.array([[np.random.randn() * 2. * np.sqrt(self.sigma_pos)], [np.random.randn() * 2. * np.sqrt(self.sigma_vel)]])
+        self.X_1 = self.X
+        return self.mu
 
     def collect_measurements(self):
-        z = self.C @ self.X + measurement_noise
-        return z
+        self.z = self.C @ self.X + np.random.randn() * np.sqrt(self.Q)
+        return self.z
