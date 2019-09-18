@@ -29,7 +29,7 @@ class UUV():
 
         self.mu = np.array([[0.],
                             [0.]])
-        self.SIG = self.R
+        self.SIG = np.eye(2)
 
         # SS parameters
         self.F = np.array([[0., 1.],
@@ -56,7 +56,7 @@ class UUV():
         self.z = 0. + np.random.randn() * np.sqrt(self.Q)
 
     def propagate_dynamics(self, u):
-        self.X = self.A @ self.X_1 + self.B * u
+        self.X = self.A @ self.X_1 + self.B * u #+ np.array([[np.random.randn() * 2. * np.sqrt(self.sigma_pos)], [np.random.randn() * 2. * np.sqrt(self.sigma_vel)]])
         self.mu = self.A @ self.X_1 + self.B * u + np.array([[np.random.randn() * 2. * np.sqrt(self.sigma_pos)], [np.random.randn() * 2. * np.sqrt(self.sigma_vel)]])
         self.X_1 = self.X
         return self.mu
