@@ -13,7 +13,7 @@ u = np.array([[0., g]]).T
 m = 1
 V0 = 50
 Ts = 0.04
-theta = np.radians(45)
+theta = np.radians(15)
 
 X_1 = np.array([[0, np.cos(theta) * V0, 0, np.sin(theta) * V0]]).T
 X = np.array([[0., 0., 0., 0.]]).T
@@ -48,7 +48,7 @@ z_log = np.zeros([size, 2])
 z_log[0, :] = z.item(0), z.item(1)
 R = np.eye(2) * delta  # Measurement uncertainty
 
-filter = Kf(mu, SIG, u, z, A, B, C, Q, R)
+filter = Kf(mu, SIG, u, z, A, B, C, R, Q)
 
 for iter in range(1, size):
 
