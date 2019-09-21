@@ -23,7 +23,7 @@ class UUV():
         # Noise parameters
         self.sigma_pos_meas = 0.001  # m^2
         self.Q = self.sigma_pos_meas
-        self.sigma_vel = 0.001  # m^2/s^2
+        self.sigma_vel = 0.01  # m^2/s^2
         self.sigma_pos = 0.0001  # m^2
         self.R = np.diagflat([self.sigma_pos, self.sigma_vel])
 
@@ -56,10 +56,8 @@ class UUV():
         self.z = 0. + np.random.randn() * np.sqrt(self.Q)
 
     def propagate_dynamics(self, u):
-        self.X = self.A @ self.X_1 + self.B * u + np.array([[np.random.randn() * 2. * np.sqrt(self.sigma_pos)], [np.random.randn() * 2. * np.sqrt(self.sigma_vel)]])
-        self.mu = self.X # self.A @ self.X_1 + self.B * u + np.array([[np.random.randn() * 2. * np.sqrt(self.sigma_pos)], [np.random.randn() * 2. * np.sqrt(self.sigma_vel)]])
+        self.X = self.A @ self.X_1 + self.B * u + np.array([[np.random.randn() * np.sqrt(self.sigma_pos)], [np.random.randn() * np.sqrt(self.sigma_vel)]])
         self.X_1 = self.X
-        return self.mu
 
     def collect_measurements(self):
         self.z = self.C @ self.X + np.random.randn() * np.sqrt(self.Q)

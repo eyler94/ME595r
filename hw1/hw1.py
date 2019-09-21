@@ -26,13 +26,13 @@ for time in time_data:
         u = 0.
 
     # Propagate Dynamics
-    UUV.mu = UUV.propagate_dynamics(u)
+    UUV.propagate_dynamics(u)
 
     # Collect Measurements
     UUV.z = UUV.collect_measurements()
 
     # Update Filter
-    [UUV.mu, UUV.SIG] = Kf.update(UUV.mu, UUV.SIG, u, UUV.z)
+    [UUV.mu, UUV.SIG] = Kf.update(Kf.mu, UUV.SIG, u, UUV.z)
 
     # Save Data
     if first:
@@ -41,8 +41,8 @@ for time in time_data:
         z_data = UUV.z
         k_data = Kf.K
         SIG = np.diag(UUV.SIG).reshape([2, 1])
-        Standard_deviation = np.array([[2*np.sqrt(SIG[0][0])],
-                                       [2*np.sqrt(SIG[1][0])]])
+        Standard_deviation = np.array([[2 * np.sqrt(SIG[0][0])],
+                                       [2 * np.sqrt(SIG[1][0])]])
         SIG_data = Standard_deviation
         first = False
     else:
@@ -55,29 +55,33 @@ for time in time_data:
                                        [2 * np.sqrt(SIG[1][0])]])
         SIG_data = np.hstack([SIG_data, Standard_deviation])
 
-# Plot Truth, Estimates, and Measurements
-fig = plt.figure(1)
-time_data = time_data.reshape([1000, 1])
-plt.plot(time_data, x_data[0, :].T)
-plt.plot(time_data, mu_data[0, :].T)
-plt.plot(time_data, z_data[0, :].T)
-plt.plot(time_data, x_data[1, :].T)
-plt.plot(time_data, mu_data[1, :].T)
-plt.legend(['position truth', 'position estimate', 'measurements', 'velocity truth', 'velocity estimate'])
+plot = True
+if plot:
+        # Plot Truth, Estimates, and Measurements
+    fig = plt.figure(1)
+    time_data = time_data.reshape([1000, 1])
+    plt.plot(time_data, x_data[0, :].T)
+    plt.plot(time_data, mu_data[0, :].T)
+    plt.plot(time_data, z_data[0, :].T)
+    plt.plot(time_data, x_data[1, :].T)
+    plt.plot(time_data, mu_data[1, :].T)
+    plt.legend(['position truth', 'position estimate', 'measurements', 'velocity truth', 'velocity estimate'])
 
-# Plot Estimation error	and	error covariance versus	time
-fig = plt.figure(2)
-plt.plot(time_data, mu_data[0, :].T-x_data[0, :].T)
-plt.plot(time_data, mu_data[1, :].T-x_data[1, :].T)
-plt.plot(time_data, SIG_data[0, :].T)
-plt.plot(time_data, SIG_data[1, :].T)
-plt.plot(time_data, -SIG_data[0, :].T)
-plt.plot(time_data, -SIG_data[1, :].T)
-plt.legend(['Estimate Error for position', 'Estimate error for velocity', 'Error covariance for position', 'Error covariance for velocity', 'Lower error covariance for position', 'Lower error covariance for velocity'])
+    # Plot Estimation error	and	error covariance versus	time
+    fig = plt.figure(2)
+    plt.plot(time_data, mu_data[0, :].T - x_data[0, :].T)
+    plt.plot(time_data, mu_data[1, :].T - x_data[1, :].T)
+    plt.plot(time_data, SIG_data[0, :].T)
+    plt.plot(time_data, SIG_data[1, :].T)
+    plt.plot(time_data, -SIG_data[0, :].T)
+    plt.plot(time_data, -SIG_data[1, :].T)
+    plt.legend(['Estimate Error for position', 'Estimate error for velocity', 'Error covariance for position',
+                'Error covariance for velocity', 'Lower error covariance for position',
+                'Lower error covariance for velocity'])
 
-# Plot Kalman Gain vs. Time
-fig = plt.figure(3)
-plt.plot(time_data, k_data[0, :].T)
-plt.plot(time_data, k_data[1, :].T)
-plt.legend(['Kalman Gain for postion','Kalman Gain for velocity'])
-plt.show()
+    # Plot Kalman Gain vs. Time
+    fig = plt.figure(3)
+    plt.plot(time_data, k_data[0, :].T)
+    plt.plot(time_data, k_data[1, :].T)
+    plt.legend(['Kalman Gain for postion', 'Kalman Gain for velocity'])
+    plt.show()
