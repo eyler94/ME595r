@@ -5,7 +5,7 @@ from control import matlab as mt
 import control as ctl
 
 
-class UUV():
+class UUV:
     def __init__(self, m=100., b=20., F=50., ts=0.05, tf=50):
         # sys parameters
         self.m = m
