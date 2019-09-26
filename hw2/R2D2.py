@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 # Class defining a two wheeled autonomous robot. It has a sensor that provides range and bearing to landmarks
 # which it uses to navigate around the world.
 
@@ -43,16 +42,19 @@ class R2D2:
         self.y = self.y0
         self.theta = self.theta0
 
-    def propagateDynamics(self, ts):
-        v_hat = self.v_c + np.random.rand()*np.sqrt(self.alpha1*self.v_c**2 + self.alpha2*self.omega_c**2)
-        omega_hat = self.omega_c + np.random.rand()*np.sqrt(self.alpha3*self.v_c**2 + self.alpha4*self.omega_c**2)
+    def propagate_dynamics(self, time):
+        self.update_velocity(time)
+        v_hat = self.v_c #+ np.random.rand()*np.sqrt(self.alpha1*self.v_c**2 + self.alpha2*self.omega_c**2)
+        omega_hat = self.omega_c #+ np.random.rand()*np.sqrt(self.alpha3*self.v_c**2 + self.alpha4*self.omega_c**2)
 
-        self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(self.theta + omega_hat * ts)
-        self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(self.theta + omega_hat * ts)
-        self.theta = self.theta + omega_hat*ts
+        self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(self.theta + omega_hat * self.ts)
+        self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(self.theta + omega_hat * self.ts)
+        self.theta = self.theta + omega_hat*self.ts
 
         return self.x, self.y, self.theta
 
-        print("Propagate dynamics.")
+    def update_velocity(self, time):
+        self.v_c = 1 + 0.5 * np.cos(2 * pi * 0.2 * time)
+        self.omega_c = -0.2 + 2 * np.cos(2 * pi * 0.6 * time)
 
 

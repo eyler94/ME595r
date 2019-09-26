@@ -17,9 +17,22 @@ Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.heig
 Tf = 20     # Sec
 Ts = 0.1    # Sec
 time_data = np.arange(0., Tf, Ts)
+time_data = time_data.reshape([1, 200])
 
 # Generate Truth
-[X, Y, TH] = R2D2.propagateDynamics(time_data)
+X = np.zeros([1, time_data.size])
+Y = np.zeros([1, time_data.size])
+TH = np.zeros([1, time_data.size])
+
+X[0][0] = R2D2.x0
+Y[0][0] = R2D2.y0
+TH[0][0] = R2D2.theta0
+
+for iter in range(1, 200):
+    xyth = R2D2.propagate_dynamics(time_data[0][iter])
+    X[0][iter] = xyth[0]
+    Y[0][iter] = xyth[1]
+    TH[0][iter] = xyth[2]
 
 # fig = plt.figure(1)
 # plt.plot(X, t)
@@ -31,7 +44,7 @@ time_data = np.arange(0., Tf, Ts)
 
 # Plot
 for iter in range(0, X.size):
-    Plotter.update(X[iter], Y[iter], TH[iter])
+    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter])
 
 
 
