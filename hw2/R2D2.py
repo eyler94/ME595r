@@ -10,10 +10,10 @@ pi = np.pi
 
 def wrapper(ang):
     if ang > np.pi:
-        print("Too much.")
+        # print("Too much.")
         ang = ang - 2 * np.pi
     elif ang <= -np.pi:
-        print("Too little.")
+        # print("Too little.")
         ang = ang + 2 * np.pi
     return ang
 
@@ -75,7 +75,7 @@ class R2D2:
             print("Looping through landmarks.")
             x = landmarks[0][iter] - self.x
             y = landmarks[1][iter] - self.y
-            R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn()*np.sqrt(self.sigma_r)
-            PH[iter] = wrapper(math.atan2(y, x) - self.theta + np.random.randn()*np.sqrt(self.sigma_theta))
+            R[iter] = np.sqrt(x ** 2 + y ** 2) #+ np.random.randn()*np.sqrt(self.sigma_r)
+            PH[iter] = wrapper(math.atan2(y, x) - self.theta )#+ np.random.randn()*np.sqrt(self.sigma_theta))
 
         return R, PH

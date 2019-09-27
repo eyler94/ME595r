@@ -31,14 +31,13 @@ class Plotter:
         self.points = self.hmt @ np.array([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
         # First plot
-        plt.ion()
         fig2 = plt.figure(2)
+        fig2.clf()
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
         plt.plot(self.points[0].T, self.points[1].T)
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
         plt.draw()
         plt.pause(0.001)
-        plt.clf()
 
     def update(self, x, y, theta):
         self.x_loc = x
@@ -48,12 +47,20 @@ class Plotter:
 
         # Re-plot
         fig2 = plt.figure(2)
+        fig2.clf()
+
+        # Plot landmarks
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+
+        # # Plot truth and measurements
+        # plt.plot(self.lm[0][0],)
+
+        # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)
+
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
         plt.draw()
         plt.pause(0.001)
-        plt.clf()
 
     def calc_points(self):
         self.hmt_2d()
