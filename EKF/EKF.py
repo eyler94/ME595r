@@ -14,7 +14,7 @@ class EKF:
         self.R = R
         self.I = np.eye(A.shape[0])
 
-    def update(self, mu, SIG, u, z):
+    def update(self, mu, SIG, u, z, c, m):
         self.mu = mu
         self.SIG = SIG
         mu_bar = self.A @ self.mu + self.B * u
