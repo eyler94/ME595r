@@ -3,8 +3,19 @@
 # which it uses to navigate around the world.
 
 import numpy as np
+import math
 
 pi = np.pi
+
+
+def wrapper(ang):
+    if ang > np.pi:
+        print("Too much.")
+        ang = ang - 2 * np.pi
+    elif ang <= -np.pi:
+        print("Too little.")
+        ang = ang + 2 * np.pi
+    return ang
 
 
 class R2D2:
@@ -39,12 +50,15 @@ class R2D2:
 
     def propagate_dynamics(self, time):
         self.update_velocity(time)
-        v_hat = self.v_c + np.random.randn()*np.sqrt(self.alpha1*self.v_c**2 + self.alpha2*self.omega_c**2)
-        omega_hat = self.omega_c + np.random.randn()*np.sqrt(self.alpha3*self.v_c**2 + self.alpha4*self.omega_c**2)
+        v_hat = self.v_c + np.random.randn() * np.sqrt(self.alpha1 * self.v_c ** 2 + self.alpha2 * self.omega_c ** 2)
+        omega_hat = self.omega_c + np.random.randn() * np.sqrt(
+            self.alpha3 * self.v_c ** 2 + self.alpha4 * self.omega_c ** 2)
 
-        self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(self.theta + omega_hat * self.ts)
-        self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(self.theta + omega_hat * self.ts)
-        self.theta = self.theta + omega_hat*self.ts
+        self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(
+            self.theta + omega_hat * self.ts)
+        self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(
+            self.theta + omega_hat * self.ts)
+        self.theta = self.theta + omega_hat * self.ts
 
         return self.x, self.y, self.theta
 
@@ -52,4 +66,16 @@ class R2D2:
         self.v_c = 1 + 0.5 * np.cos(2 * pi * 0.2 * time)
         self.omega_c = -0.2 + 2 * np.cos(2 * pi * 0.6 * time)
 
+    def calculate_measurements(self, num_landmarks, landmarks):
+        print("Calculating measurements.")
+        R = np.zeros([num_landmarks, 1])
+        PH = np.zeros([num_landmarks, 1])
 
+        for iter in range(0, num_landmarks):
+            print("Looping through landmarks.")
+            x = landmarks[0][iter] - self.x
+            y = landmarks[1][iter] - self.y
+            R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn()*np.sqrt(self.sigma_r)
+            PH[iter] = wrapper(math.atan2(y, x) - self.theta + np.random.randn()*np.sqrt(self.sigma_theta))
+
+        return R, PH

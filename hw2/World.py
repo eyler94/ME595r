@@ -18,10 +18,3 @@ class World:
         # Landmarks
         self.Number_Landmarks = 3
         self.Landmarks = np.array([[6, -7, 6], [4, 8, -4]])
-
-
-class Landmark:
-    def __init__(self, x=np.random.randint(-Usually_width / 2., Usually_width / 2.),
-                 y=np.random.randint(-Usually_height / 2., Usually_height / 2.)):
-        self.x = x
-        self.y = y
