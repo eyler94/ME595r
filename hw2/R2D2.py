@@ -63,8 +63,8 @@ class R2D2:
         return self.x, self.y, self.theta
 
     def update_velocity(self, time):
-        self.v_c = 1 + 0.5 * np.cos(2 * pi * 0.2 * time)
-        self.omega_c = -0.2 + 2 * np.cos(2 * pi * 0.6 * time)
+        self.v_c = (1 + 0.5 * np.cos(2 * pi * 0.2 * time))*1
+        self.omega_c = (-0.2 + 2 * np.cos(2 * pi * 0.6 * time))*1
 
     def calculate_measurements(self, num_landmarks, landmarks):
         # print("Calculating measurements.")
