@@ -28,7 +28,7 @@ class Plotter:
             [[np.cos(self.theta), -np.sin(self.theta), self.x_loc],
              [np.sin(self.theta), np.cos(self.theta), self.y_loc],
              [0., 0., 1.]])
-        self.points = self.hmt @ np.array([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
+        self.points = self.hmt @ np.asarray([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
         # First plot
         fig2 = plt.figure(2)
@@ -64,7 +64,7 @@ class Plotter:
 
     def calc_points(self):
         self.hmt_2d()
-        self.points = self.hmt @ np.array([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
+        self.points = self.hmt @ np.asarray([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
     def hmt_2d(self):
         self.hmt = np.array(

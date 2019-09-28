@@ -54,13 +54,19 @@ for iter in range(1, 200):
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
-
+SIG_X = np.zeros([1, time_data.size])
+SIG_Y = np.zeros([1, time_data.size])
+SIG_TH = np.zeros([1, time_data.size])
 
 R2D2.update_velocity(time_data[0][0])
 mu_sig = EKF.update(EKF.mu, EKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
 MU_X[0][0] = mu_sig[0][0]
 MU_Y[0][0] = mu_sig[0][1]
 MU_TH[0][0] = mu_sig[0][2]
+SIG_X[0][0] = 2 * np.sqrt(mu_sig[1][0][0])
+SIG_Y[0][0] = 2 * np.sqrt(mu_sig[1][1][1])
+SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
+
 
 
 for iter in range(1, 200):
@@ -69,9 +75,14 @@ for iter in range(1, 200):
     MU_X[0][iter] = mu_sig[0][0]
     MU_Y[0][iter] = mu_sig[0][1]
     MU_TH[0][iter] = mu_sig[0][2]
+    SIG_X[0][iter] = 2 * np.sqrt(mu_sig[1][0][0])
+    SIG_Y[0][iter] = 2 * np.sqrt(mu_sig[1][1][1])
+    SIG_TH[0][iter] = 2 * np.sqrt(mu_sig[1][2][2])
 
 # Plot
 plt.ion()
+plt.interactive(False)
+
 for iter in range(0, X.size):
     Plotter.update(X[0][iter], Y[0][iter], TH[0][iter])
 
@@ -84,6 +95,23 @@ plt.title('Path')
 
 fig4 = plt.figure(4)
 fig4.clf()
-plt.title('X')
+plt.plot(time_data[0], MU_X[0]-X[0])
+plt.plot(time_data[0], SIG_X[0])
+plt.plot(time_data[0], -SIG_X[0])
+plt.title('Error in X')
 
+fig5 = plt.figure(5)
+fig5.clf()
+plt.plot(time_data[0], MU_Y[0]-Y[0])
+plt.plot(time_data[0], SIG_Y[0])
+plt.plot(time_data[0], -SIG_Y[0])
+plt.title('Error in Y')
+
+fig6 = plt.figure(5)
+fig6.clf()
+plt.plot(time_data[0], MU_TH[0]-TH[0])
+plt.plot(time_data[0], SIG_TH[0])
+plt.plot(time_data[0], -SIG_TH[0])
+plt.title('Error in Y')
+plt.show()
 

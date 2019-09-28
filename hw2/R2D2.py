@@ -67,12 +67,12 @@ class R2D2:
         self.omega_c = -0.2 + 2 * np.cos(2 * pi * 0.6 * time)
 
     def calculate_measurements(self, num_landmarks, landmarks):
-        print("Calculating measurements.")
+        # print("Calculating measurements.")
         R = np.zeros([num_landmarks, 1])
         PH = np.zeros([num_landmarks, 1])
 
         for iter in range(0, num_landmarks):
-            print("Looping through landmarks.")
+            # print("Looping through landmarks.")
             x = landmarks[0][iter] - self.x
             y = landmarks[1][iter] - self.y
             R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn()*(self.sigma_r)
