@@ -107,11 +107,11 @@ plt.plot(time_data[0], SIG_Y[0])
 plt.plot(time_data[0], -SIG_Y[0])
 plt.title('Error in Y')
 
-fig6 = plt.figure(5)
+fig6 = plt.figure(6)
 fig6.clf()
 plt.plot(time_data[0], MU_TH[0]-TH[0])
 plt.plot(time_data[0], SIG_TH[0])
 plt.plot(time_data[0], -SIG_TH[0])
-plt.title('Error in Y')
+plt.title('Error in Theta')
 plt.show()
 
