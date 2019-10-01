@@ -2,21 +2,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 sys.path.append('..')
-import R2D2
-import World
-import Plotter
-from EKF import EKF
+from R2D2 import R2D2
+from World import World
+from Plotter import Plotter
+from UKF import UKF
 from importlib import reload
 reload(R2D2)
 reload(World)
 reload(Plotter)
-reload(EKF)
+reload(UKF)
 
-# Instantiate World, Robot, Plotter, and EKF
+# Instantiate World, Robot, Plotter, and UKF
 R2D2 = R2D2.R2D2()
 World = World.World()
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
-EKF = EKF.EKF(R2D2, World)
+UKF = UKF.UKF(R2D2, World)
 
 # Set Timeline
 Tf = 20     # Sec
@@ -59,7 +59,7 @@ SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
 
 R2D2.update_velocity(time_data[0][0])
-mu_sig = EKF.update(EKF.mu, EKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
+mu_sig = UKF.update(UKF.mu, UKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
 MU_X[0][0] = mu_sig[0][0]
 MU_Y[0][0] = mu_sig[0][1]
 MU_TH[0][0] = mu_sig[0][2]
@@ -71,7 +71,7 @@ SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
 
 for iter in range(1, 200):
     R2D2.update_velocity(time_data[0][iter])
-    mu_sig = EKF.update(EKF.mu, EKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
+    mu_sig = UKF.update(UKF.mu, UKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
     MU_X[0][iter] = mu_sig[0][0]
     MU_Y[0][iter] = mu_sig[0][1]
     MU_TH[0][iter] = mu_sig[0][2]

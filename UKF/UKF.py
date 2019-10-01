@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from scipy.linalg import block_diag
 
 
 def wrapper(ang):
@@ -14,7 +15,8 @@ def wrapper(ang):
 
 class UKF:
     def __init__(self, R2D2, World):
-        print("Init")
+
+        # Generate augmented mean and covariance
         v = 1
         omega = 1
         theta = 1
@@ -34,14 +36,34 @@ class UKF:
                            [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
         self.Q = np.array([[R2D2.sigma_r**2, 0],
                            [0, R2D2.sigma_theta**2]])
-        self.mu = np.array([R2D2.x0, R2D2.y0, R2D2.theta0, 0, 0, 0, 0])
+        self.mu = np.array([[R2D2.x0],
+                            [R2D2.y0],
+                            [R2D2.theta0]])
+        self.mu_a = np.array([R2D2.x0, R2D2.y0, R2D2.theta0, 0, 0, 0, 0])
         self.SIG = np.diag([1, 1, 0.1])
-        self.mu_bar = self.mu + np.array([[- v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
-                                          [v / omega * np.cos(theta) - v / omega * np.cos(th_om_dt)],
-                                          [omega*self.ts]])
-        self.SIG_bar = self.G @ self.SIG @ self.G.T + self.V @ self.M @ self.V.T
-        self.landmarks = World.Landmarks
-        self.num_landmarks = World.Number_Landmarks
+        self.SIG_a = block_diag(self.SIG, self.M, self.Q)
+
+        # Generate Sigma points
+        self.Chi_a = np.array([])
+
+        # Pass sigma points through motion model and compute Gaussian statistics
+        self.Chi__bar =
+        self.mu_bar =
+        self.SIG_bar =
+
+        # Predict observations at sigma points and compute Gaussian statistics
+        self.Z_bar =
+        self.z_hat =
+        self.S =
+        self.SIG_xz =
+
+        # Update mean and covariance
+        self.K = self.SIG_xz @ np.linalg.inv(self.S)
+        # z_diff = np.array([r[spot] - z_hat[0],
+        #                    wrapper(ph[spot] - z_hat[1])])
+        z_diff =
+        self.mu = self.mu_bar + self.K @ z_diff
+        self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
 
 
     def update(self, mu, SIG, v, omega, r, ph):
