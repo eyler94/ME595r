@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 sys.path.append('..')
-import R2D2
-import World
-import Plotter
+from R2D2 import R2D2
+from World import World
+from Plotter import Plotter
 from EKF import EKF
 from importlib import reload
 reload(R2D2)
