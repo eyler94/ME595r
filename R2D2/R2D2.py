@@ -58,7 +58,7 @@ class R2D2:
             self.theta + omega_hat * self.ts)
         self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(
             self.theta + omega_hat * self.ts)
-        self.theta = self.theta + omega_hat * self.ts
+        self.theta = wrapper(self.theta + omega_hat * self.ts)
 
         return self.x, self.y, self.theta
 
