@@ -45,9 +45,10 @@ class UKF:
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
         # Generate Sigma points
-        self.lamb_duh = 4
         self.alpha = 0.4
-        self.kapa = 0.7
+        self.kapa = 4
+        self.n = 7
+        self.lamb_duh = self.
         self.Chi_a = np.array([])
         # Cholesky looks like the following L = ch(mat, lower=True)
 
