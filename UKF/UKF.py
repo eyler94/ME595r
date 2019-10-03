@@ -21,7 +21,6 @@ class UKF:
         omega = 1
         theta = 1
         self.ts = R2D2.ts
-        th_om_dt = wrapper(theta + omega * self.ts)
         self.alpha1 = R2D2.alpha1
         self.alpha2 = R2D2.alpha2
         self.alpha3 = R2D2.alpha3
@@ -54,7 +53,7 @@ class UKF:
         # Pass sigma points through motion model and compute Gaussian statistics
         self.u = np.array([[0],
                            [0]])
-        self.Chi__bar = g(u+self.Chi_u,self.Chi_x)
+        self.Chi_bar = g(u+self.Chi_u,self.Chi_x)
 
         # Calculate weights
         self.w_m = np.ones([1,15])
@@ -65,12 +64,12 @@ class UKF:
             self.w_m[spot] = 1 / (2 * (self.n + self.lamb_duh))
             self.w_c[spot] = 1 / (2 * (self.n + self.lamb_duh))
 
-        self.mu_bar = self.w_m @ self.Chi_x
+        self.mu_bar = self.Chi_x @ self.w_m
         self.SIG_bar = self.w_c @ () @ ()
 
         # Predict observations at sigma points and compute Gaussian statistics
-        self.Z_bar =
-        self.z_hat =
+        self.Z_bar = h(self.Chi_bar) + self.Chi_z
+        self.z_hat = self.Z_bar @ self.w_m
         self.S =
         self.SIG_xz =
 
@@ -82,8 +81,16 @@ class UKF:
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
 
-    def g(self,u,x):
+    def g(self,u,state):
         print("Propagate sigma points.")
+        v = u[0]
+        omega = u[1]
+
+        x = state[0]
+        y = state[1]
+        theta = state[2]
+
+
         
 
     def h(self,x):
