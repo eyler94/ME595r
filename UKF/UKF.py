@@ -3,7 +3,6 @@ import math
 from scipy.linalg import block_diag
 from scipy.linalg import cholesky as ch
 
-
 def wrapper(ang):
     if ang > np.pi:
         # print("Too much.")
@@ -13,10 +12,10 @@ def wrapper(ang):
         ang = ang + 2 * np.pi
     return ang
 
-
 class UKF:
     def __init__(self, R2D2, World):
-
+        pd.set_option('display.width', 320)
+        pd.set_option('display.max_columns', 12)
         # Generate augmented mean and covariance
         v = 1
         omega = 1
@@ -27,12 +26,6 @@ class UKF:
         self.alpha2 = R2D2.alpha2
         self.alpha3 = R2D2.alpha3
         self.alpha4 = R2D2.alpha4
-        # self.G = np.array([[1, 0, - v / omega * np.cos(theta) + v / omega * np.cos(th_om_dt)],
-        #                    [0, 1, - v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
-        #                    [0, 0, 1]])
-        # self.V = np.array([[(-np.sin(theta)+np.sin(th_om_dt))/omega, v*(np.sin(theta)-np.sin(th_om_dt))/omega**2 + v*np.cos(th_om_dt)*self.ts/omega],
-        #                    [(np.cos(theta)-np.cos(th_om_dt))/omega, -v*(np.cos(theta)-np.cos(th_om_dt))/omega**2 + v*np.sin(th_om_dt)*self.ts/omega],
-        #                    [0., self.ts]])
         self.M = np.array([[self.alpha1 * v ** 2 + self.alpha2 * omega ** 2, 0],
                            [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
         self.Q = np.array([[R2D2.sigma_r**2, 0],
@@ -41,22 +34,39 @@ class UKF:
                             [R2D2.y0],
                             [R2D2.theta0]])
         self.mu_a = np.array([R2D2.x0, R2D2.y0, R2D2.theta0, 0, 0, 0, 0])
+        self.mu_a = np.reshape(self.mu_a,[7,1])
         self.SIG = np.diag([1, 1, 0.1])
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
         # Generate Sigma points
         self.alpha = 0.4
-        self.kapa = 4
+        self.kappa = 4
+        self.beta = 2
         self.n = 7
-        self.lamb_duh = self.
-        self.Chi_a = np.array([])
+        self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
+        self.gamma = np.sqrt(self.n+self.lamb_duh+self.n)
         # Cholesky looks like the following L = ch(mat, lower=True)
-
+        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a), self.mu_a-self.gamma*ch(self.SIG_a)])
+        self.Chi_x = self.Chi_a[0:3,:]
+        self.Chi_u = self.Chi_a[3:5, :]
+        self.Chi_z = self.Chi_a[5:, :]
 
         # Pass sigma points through motion model and compute Gaussian statistics
-        self.Chi__bar =
-        self.mu_bar =
-        self.SIG_bar =
+        self.u = np.array([[0],
+                           [0]])
+        self.Chi__bar = g(u+self.Chi_u,self.Chi_x)
+
+        # Calculate weights
+        self.w_m = np.ones([1,15])
+        self.w_c = np.ones([1, 15])
+        self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
+        self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
+        for spot in range(1,15):
+            self.w_m[spot] = 1 / (2 * (self.n + self.lamb_duh))
+            self.w_c[spot] = 1 / (2 * (self.n + self.lamb_duh))
+
+        self.mu_bar = self.w_m @ self.Chi_x
+        self.SIG_bar = self.w_c @ () @ ()
 
         # Predict observations at sigma points and compute Gaussian statistics
         self.Z_bar =
@@ -71,6 +81,13 @@ class UKF:
         z_diff =
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
+
+    def g(self,u,x):
+        print("Propagate sigma points.")
+        
+
+    def h(self,x):
+        print("Collect sigma measurements.")
 
 
     def update(self, mu, SIG, v, omega, r, ph):

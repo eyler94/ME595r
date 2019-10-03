@@ -63,7 +63,7 @@ class R2D2:
         return self.x, self.y, self.theta
 
     def update_velocity(self, time):
-        self.v_c = (1 + 0.5 * np.cos(2 * pi * 0.2 * time))*1
+        self.v_c = (1 + 0.5 * np.cos(2 * pi * 0.2 * time))*10
         self.omega_c = (-0.2 + 2 * np.cos(2 * pi * 0.6 * time))*1
 
     def calculate_measurements(self, num_landmarks, landmarks):
@@ -75,7 +75,7 @@ class R2D2:
             # print("Looping through landmarks.")
             x = landmarks[0][iter] - self.x
             y = landmarks[1][iter] - self.y
-            R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn()*(self.sigma_r)
-            PH[iter] = wrapper(math.atan2(y, x) - self.theta + np.random.randn()*(self.sigma_theta))
+            R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn() * self.sigma_r
+            PH[iter] = math.atan2(y, x) - self.theta + np.random.randn() * self.sigma_theta
 
         return R, PH
