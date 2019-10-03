@@ -4,18 +4,12 @@ from scipy.linalg import block_diag
 from scipy.linalg import cholesky as ch
 
 def wrapper(ang):
-    if ang > np.pi:
-        # print("Too much.")
-        ang = ang - 2 * np.pi
-    elif ang <= -np.pi:
-        # print("Too little.")
-        ang = ang + 2 * np.pi
+    ang -= np.pi*2 * np.floor((ang + np.pi) / (2*np.pi))
     return ang
+
 
 class UKF:
     def __init__(self, R2D2, World):
-        pd.set_option('display.width', 320)
-        pd.set_option('display.max_columns', 12)
         # Generate augmented mean and covariance
         v = 1
         omega = 1
@@ -53,7 +47,9 @@ class UKF:
         # Pass sigma points through motion model and compute Gaussian statistics
         self.u = np.array([[0],
                            [0]])
-        self.Chi_bar = g(u+self.Chi_u,self.Chi_x)
+        u = np.array([[v],
+                      [omega]])
+        self.Chi_bar = self.g(u+self.Chi_u,self.Chi_x)
 
         # Calculate weights
         self.w_m = np.ones([1,15])
@@ -61,23 +57,23 @@ class UKF:
         self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
         self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
         for spot in range(1,15):
-            self.w_m[spot] = 1 / (2 * (self.n + self.lamb_duh))
-            self.w_c[spot] = 1 / (2 * (self.n + self.lamb_duh))
+            self.w_m[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
+            self.w_c[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
 
-        self.mu_bar = self.Chi_x @ self.w_m
-        self.SIG_bar = self.w_c @ () @ ()
+        self.mu_bar = self.Chi_x @ self.w_m.T
+        self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
 
         # Predict observations at sigma points and compute Gaussian statistics
-        self.Z_bar = h(self.Chi_bar) + self.Chi_z
-        self.z_hat = self.Z_bar @ self.w_m
-        self.S =
-        self.SIG_xz =
+        self.Z_bar = self.h(self.Chi_bar) + self.Chi_z
+        self.z_hat = self.Z_bar @ self.w_m.T
+        self.S = np.multiply(self.w_c,(self.Z_bar-self.z_hat)) @ (self.Z_bar-self.z_hat).T
+        self.SIG_xz = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Z_bar-self.z_hat).T
 
         # Update mean and covariance
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
-        # z_diff = np.array([r[spot] - z_hat[0],
-        #                    wrapper(ph[spot] - z_hat[1])])
-        z_diff =
+        # # z_diff = np.array([r[spot] - z_hat[0],
+        # #                    wrapper(ph[spot] - z_hat[1])])
+        # z_diff =
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
 
@@ -90,11 +86,16 @@ class UKF:
         y = state[1]
         theta = state[2]
 
+        x = x - v/omega*np.sin(theta) + v/omega*np.sin(wrapper(theta + omega * self.ts))
+        y = y + v/omega*np.cos(theta) - v/omega*np.cos(wrapper(theta + omega * self.ts))
+        theta = wrapper(theta + omega * self.ts)
 
-        
+        return x, y, theta
+
 
     def h(self,x):
         print("Collect sigma measurements.")
+
 
 
     def update(self, mu, SIG, v, omega, r, ph):

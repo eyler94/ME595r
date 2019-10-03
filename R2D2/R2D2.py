@@ -9,12 +9,7 @@ pi = np.pi
 
 
 def wrapper(ang):
-    if ang > np.pi:
-        # print("Too much.")
-        ang = ang - 2 * np.pi
-    elif ang <= -np.pi:
-        # print("Too little.")
-        ang = ang + 2 * np.pi
+    ang -= np.pi*2 * np.floor((ang + np.pi) / (2*np.pi))
     return ang
 
 
@@ -55,15 +50,15 @@ class R2D2:
             self.alpha3 * self.v_c ** 2 + self.alpha4 * self.omega_c ** 2)
 
         self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(
-            self.theta + omega_hat * self.ts)
+            wrapper(self.theta + omega_hat * self.ts))
         self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(
-            self.theta + omega_hat * self.ts)
+            wrapper(self.theta + omega_hat * self.ts))
         self.theta = wrapper(self.theta + omega_hat * self.ts)
 
         return self.x, self.y, self.theta
 
     def update_velocity(self, time):
-        self.v_c = (1 + 0.5 * np.cos(2 * pi * 0.2 * time))*10
+        self.v_c = (1 + 0.5 * np.cos(2 * pi * 0.2 * time))*1
         self.omega_c = (-0.2 + 2 * np.cos(2 * pi * 0.6 * time))*1
 
     def calculate_measurements(self, num_landmarks, landmarks):
