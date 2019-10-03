@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from scipy.linalg import block_diag
+from scipy.linalg import cholesky as ch
 
 
 def wrapper(ang):
@@ -44,7 +45,12 @@ class UKF:
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
         # Generate Sigma points
+        self.lamb_duh = 4
+        self.alpha = 0.4
+        self.kapa = 0.7
         self.Chi_a = np.array([])
+        # Cholesky looks like the following L = ch(mat, lower=True)
+
 
         # Pass sigma points through motion model and compute Gaussian statistics
         self.Chi__bar =
