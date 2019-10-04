@@ -10,13 +10,18 @@ def wrapper(ang):
 
 class UKF:
     def __init__(self, R2D2, World):
+        self.mu = np.array([[R2D2.x0],
+                            [R2D2.y0],
+                            [R2D2.theta0]])
+        self.SIG = np.diag([1, 1, 0.1])
         self.v = 1
         self.omega = 1
-        self.theta = 1
+        self.r = np.array([0, 0, 0])
+        self.ph = np.array([0, 0, 0])
         self.u = np.array([[self.v],
                       [self.omega]])
-        self.z = np.array([[0],
-                           [0]])
+        self.current_landmark = 0
+        self.landmarks = World.Landmarks
 
         # Generate augmented mean and covariance
         self.ts = R2D2.ts
@@ -28,13 +33,9 @@ class UKF:
                            [0, self.alpha3 * self.v ** 2 + self.alpha4 * self.omega ** 2]])
         self.Q = np.array([[R2D2.sigma_r**2, 0],
                            [0, R2D2.sigma_theta**2]])
-        self.mu = np.array([[R2D2.x0],
-                            [R2D2.y0],
-                            [R2D2.theta0]])
         self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])
         self.mu_a = np.reshape(self.mu_a, [7, 1])
         self.mu_a = np.reshape(self.mu_a,[7,1])
-        self.SIG = np.diag([1, 1, 0.1])
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
         # Generate Sigma points
@@ -44,8 +45,7 @@ class UKF:
         self.n = 7
         self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
         self.gamma = np.sqrt(self.n+self.lamb_duh+self.n)
-        # Cholesky looks like the following L = ch(mat, lower=True)
-        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a), self.mu_a-self.gamma*ch(self.SIG_a)])
+        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a,lower=True), self.mu_a-self.gamma*ch(self.SIG_a,lower=True)])
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
@@ -66,22 +66,23 @@ class UKF:
         self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
 
         # Predict observations at sigma points and compute Gaussian statistics
-        self.Z_bar = self.h(self.Chi_bar, World.Landmarks[:,0]) + self.Chi_z
+        self.Z_bar = self.h(self.Chi_bar, self.landmarks[:,self.current_landmark]) + self.Chi_z
         self.z_hat = self.Z_bar @ self.w_m.T
         self.S = np.multiply(self.w_c,(self.Z_bar-self.z_hat)) @ (self.Z_bar-self.z_hat).T
         self.SIG_xz = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Z_bar-self.z_hat).T
 
         # Update mean and covariance
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
-        z_diff = self.z-self.z_hat
-        z_diff[1] = wrapper(z_diff[1])
+        z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
+                           wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
-        self.lines4_16_wo_7(World.Landmarks[:,1])
-        self.lines4_16_wo_7(World.Landmarks[:,2])
+        self.current_landmark = 1
+        self.lines4_16_wo_7()
+        self.current_landmark = 2
+        self.lines4_16_wo_7()
 
     def g(self,u,state):
-        print("Propagate sigma points.")
         v = u[0]
         omega = u[1]
 
@@ -96,7 +97,6 @@ class UKF:
         return x, y, theta
 
     def h(self, state, landmark):
-        print("Collect sigma measurements.")
         x = landmark[0] - state[0]
         y = landmark[1] - state[1]
 
@@ -105,8 +105,7 @@ class UKF:
 
         return r, ph
 
-    def lines4_16_wo_7(self, landmark):
-        print("Lines 4 through 16 without 7.")
+    def lines4_16_wo_7(self):
         # Generate augmented mean and covariance
         self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])
         self.mu_a = np.reshape(self.mu_a,[7,1])
@@ -116,59 +115,98 @@ class UKF:
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
-        self.mu_bar = self.Chi_x @ self.w_m.T
-        self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
+        # self.mu_bar = self.Chi_x @ self.w_m.T
+        # self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
         # Predict observations at sigma points and compute Gaussian statistics
-        self.Z_bar = self.h(self.Chi_bar, landmark) + self.Chi_z
+        self.Z_bar = self.h(self.Chi_bar, self.landmarks[:,self.current_landmark]) + self.Chi_z
         self.z_hat = self.Z_bar @ self.w_m.T
         self.S = np.multiply(self.w_c,(self.Z_bar-self.z_hat)) @ (self.Z_bar-self.z_hat).T
         self.SIG_xz = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Z_bar-self.z_hat).T
         # Update mean and covariance
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
-        z_diff = self.z - self.z_hat
-        z_diff[1] = wrapper(z_diff[1])
+        z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
+                           wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
 
     def update(self, mu, SIG, v, omega, r, ph):
         self.mu = mu
         self.SIG = SIG
-        theta = self.mu[2][0]
-        th_om_dt = wrapper(theta + omega * self.ts)
-        self.G = np.array([[1, 0, - v / omega * np.cos(theta) + v / omega * np.cos(th_om_dt)],
-                           [0, 1, - v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
-                           [0, 0, 1]])
-        self.V = np.array([[(-np.sin(theta)+np.sin(th_om_dt))/omega, v*(np.sin(theta)-np.sin(th_om_dt))/omega**2 + v*np.cos(th_om_dt)*self.ts/omega],
-                           [(np.cos(theta)-np.cos(th_om_dt))/omega, -v*(np.cos(theta)-np.cos(th_om_dt))/omega**2 + v*np.sin(th_om_dt)*self.ts/omega],
-                           [0., self.ts]])
-        self.M = np.array([[self.alpha1 * v ** 2 + self.alpha2 * omega ** 2, 0],
-                           [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
-        self.mu_bar = self.mu + np.array([[- v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
-                                          [v / omega * np.cos(theta) - v / omega * np.cos(th_om_dt)],
-                                          [omega*self.ts]])
-        self.SIG_bar = self.G @ self.SIG @ self.G.T + self.V @ self.M @ self.V.T
-        self.features(r, ph)
+        self.v = v
+        self.omega = omega
+        self.r = r
+        self.ph = ph
+        self.u = np.array([[self.v],
+                      [self.omega]])
+        self.current_landmark = 0
+        self.M = np.array([[self.alpha1 * self.v ** 2 + self.alpha2 * self.omega ** 2, 0],
+                           [0, self.alpha3 * self.v ** 2 + self.alpha4 * self.omega ** 2]])
+        self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])
+        self.mu_a = np.reshape(self.mu_a, [7, 1])
+        self.mu_a = np.reshape(self.mu_a,[7,1])
+        self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
-        self.mu = self.mu_bar
-        self.SIG = self.SIG_bar
+        # Generate Sigma points
+        self.alpha = 0.4
+        self.kappa = 4
+        self.beta = 2
+        self.n = 7
+        self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
+        self.gamma = np.sqrt(self.n+self.lamb_duh+self.n)
+        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a,lower=True), self.mu_a-self.gamma*ch(self.SIG_a,lower=True)])
+        self.Chi_x = self.Chi_a[0:3,:]
+        self.Chi_u = self.Chi_a[3:5, :]
+        self.Chi_z = self.Chi_a[5:, :]
+
+        # Pass sigma points through motion model and compute Gaussian statistics
+        self.Chi_bar = self.g(self.u+self.Chi_u,self.Chi_x)
+
+        # Calculate weights
+        self.w_m = np.ones([1,15])
+        self.w_c = np.ones([1, 15])
+        self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
+        self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
+        for spot in range(1,15):
+            self.w_m[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
+            self.w_c[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
+
+        self.mu_bar = self.Chi_x @ self.w_m.T
+        self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
+
+        # Predict observations at sigma points and compute Gaussian statistics
+        self.Z_bar = self.h(self.Chi_bar, self.landmarks[:,self.current_landmark]) + self.Chi_z
+        self.z_hat = self.Z_bar @ self.w_m.T
+        self.S = np.multiply(self.w_c,(self.Z_bar-self.z_hat)) @ (self.Z_bar-self.z_hat).T
+        self.SIG_xz = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Z_bar-self.z_hat).T
+
+        # Update mean and covariance
+        self.K = self.SIG_xz @ np.linalg.inv(self.S)
+        z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
+                           wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
+        self.mu = self.mu_bar + self.K @ z_diff
+        self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
+        self.current_landmark = 1
+        self.lines4_16_wo_7()
+        self.current_landmark = 2
+        self.lines4_16_wo_7()
 
         return self.mu, self.SIG
 
-    def features(self, r, ph):
-        for spot in range(0, self.num_landmarks):
-            diff_x = self.landmarks[0][spot]-self.mu_bar[0][0]
-            diff_y = self.landmarks[1][spot]-self.mu_bar[1][0]
-            q = diff_x ** 2 + diff_y ** 2
-            z_hat = np.array([[np.sqrt(q)],
-                              [wrapper(math.atan2(diff_y, diff_x)-self.mu_bar[2][0])]])
-            H = np.array([[-diff_x/np.sqrt(q), -diff_y/np.sqrt(q), 0],
-                          [diff_y/q, -diff_x/q, -1]])
-            S = H @ self.SIG_bar @ H.T + self.Q
-            K = self.SIG_bar @ H.T @ np.linalg.inv(S)
-            z_diff = np.array([r[spot]-z_hat[0],
-                               wrapper(ph[spot]-z_hat[1])])
-            self.mu_bar = self.mu_bar + K @ z_diff
-            self.SIG_bar = (np.eye(3) - K @ H) @ self.SIG_bar
+    # def features(self, r, ph):
+    #     for spot in range(0, self.num_landmarks):
+    #         diff_x = self.landmarks[0][spot]-self.mu_bar[0][0]
+    #         diff_y = self.landmarks[1][spot]-self.mu_bar[1][0]
+    #         q = diff_x ** 2 + diff_y ** 2
+    #         z_hat = np.array([[np.sqrt(q)],
+    #                           [wrapper(math.atan2(diff_y, diff_x)-self.mu_bar[2][0])]])
+    #         H = np.array([[-diff_x/np.sqrt(q), -diff_y/np.sqrt(q), 0],
+    #                       [diff_y/q, -diff_x/q, -1]])
+    #         S = H @ self.SIG_bar @ H.T + self.Q
+    #         K = self.SIG_bar @ H.T @ np.linalg.inv(S)
+    #         z_diff = np.array([r[spot]-z_hat[0],
+    #                            wrapper(ph[spot]-z_hat[1])])
+    #         self.mu_bar = self.mu_bar + K @ z_diff
+    #         self.SIG_bar = (np.eye(3) - K @ H) @ self.SIG_bar
 
 
 
