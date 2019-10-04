@@ -1,7 +1,13 @@
 import numpy as np
 import math
 from scipy.linalg import block_diag
-from scipy.linalg import cholesky as ch
+from numpy.linalg import cholesky as ch
+
+import pandas as pd
+desired_width=320
+pd.set_option('display.width', desired_width)
+np.set_printoptions(linewidth=desired_width)
+pd.set_option('display.max_columns',10)
 
 def wrapper(ang):
     ang -= np.pi*2 * np.floor((ang + np.pi) / (2*np.pi))
@@ -46,7 +52,7 @@ class UKF:
         self.n = 7
         self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
         self.gamma = np.sqrt(self.n+self.lamb_duh)
-        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a,lower=True), self.mu_a-self.gamma*ch(self.SIG_a,lower=True)])
+        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a), self.mu_a-self.gamma*ch(self.SIG_a)])
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
@@ -117,8 +123,8 @@ class UKF:
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
         self.Chi_bar = self.Chi_x
-        # self.mu_bar = self.Chi_x @ self.w_m.T
-        # self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
+        self.mu_bar = self.Chi_x @ self.w_m.T
+        self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
         # Predict observations at sigma points and compute Gaussian statistics
         self.Z_bar = self.h(self.Chi_bar, self.landmarks[:,self.current_landmark]) + self.Chi_z
         self.z_hat = self.Z_bar @ self.w_m.T
@@ -153,24 +159,14 @@ class UKF:
         self.beta = 2
         self.n = 7
         self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
-        self.gamma = np.sqrt(self.n+self.lamb_duh+self.n)
-        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a,lower=True), self.mu_a-self.gamma*ch(self.SIG_a,lower=True)])
+        self.gamma = np.sqrt(self.n+self.lamb_duh)
+        self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a), self.mu_a-self.gamma*ch(self.SIG_a)])
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
 
         # Pass sigma points through motion model and compute Gaussian statistics
         self.Chi_bar = self.g(self.u+self.Chi_u,self.Chi_x)
-
-        # # Calculate weights
-        # self.w_m = np.ones([1,15])
-        # self.w_c = np.ones([1, 15])
-        # self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
-        # self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
-        # for spot in range(1,15):
-        #     self.w_m[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
-        #     self.w_c[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
-
         self.mu_bar = self.Chi_x @ self.w_m.T
         self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
 
@@ -184,20 +180,12 @@ class UKF:
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
         z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
                            wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
-        print("z_diff:", z_diff)
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
-        print("mu0", self.mu)
-        print("sig", self.SIG)
-        # self.current_landmark = 1
-        # self.lines4_16_wo_7()
-        # print("mu1", self.mu)
-        # print("sig", self.SIG)
-        # self.current_landmark = 2
-        # self.lines4_16_wo_7()
-        # print("mu2", self.mu)
-        # print("sig", self.SIG)
-
+        self.current_landmark = 1
+        self.lines4_16_wo_7()
+        self.current_landmark = 2
+        self.lines4_16_wo_7()
         return self.mu, self.SIG
 
 

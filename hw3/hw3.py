@@ -24,7 +24,7 @@ def wrapper(ang):
 R2D2 = R2D2.R2D2()
 World = World.World()
 Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, fig_num=1)
-PlotterUKF = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, fig_num=2)
+# PlotterUKF = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, fig_num=2)
 UKF = UKF.UKF(R2D2, World)
 
 # Set Timeline
@@ -76,7 +76,7 @@ SIG_Y[0][0] = 2 * np.sqrt(mu_sig[1][1][1])
 SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
 
 for iter in range(1, int(Tf / Ts)):
-    print("time", time_data[0][iter])
+    # print("time", time_data[0][iter])
     R2D2.update_velocity(time_data[0][iter])
     mu_sig = UKF.update(UKF.mu, UKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
     MU_X[0][iter] = mu_sig[0][0]
