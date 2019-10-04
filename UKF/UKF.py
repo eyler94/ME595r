@@ -108,7 +108,7 @@ class UKF:
 
     def lines4_16_wo_7(self):
         # Generate augmented mean and covariance
-        self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])
+        self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])    
         self.mu_a = np.reshape(self.mu_a,[7,1])
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
         # Generate Sigma points
@@ -116,6 +116,7 @@ class UKF:
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
         self.Chi_z = self.Chi_a[5:, :]
+        self.Chi_bar = self.Chi_x
         # self.mu_bar = self.Chi_x @ self.w_m.T
         # self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
         # Predict observations at sigma points and compute Gaussian statistics
