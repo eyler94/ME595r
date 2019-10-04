@@ -64,7 +64,7 @@ class UKF:
         self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
 
         # Predict observations at sigma points and compute Gaussian statistics
-        self.Z_bar = self.h(self.Chi_bar) + self.Chi_z
+        self.Z_bar = self.h(self.Chi_bar, world.Landmarks[:,0]) + self.Chi_z
         self.z_hat = self.Z_bar @ self.w_m.T
         self.S = np.multiply(self.w_c,(self.Z_bar-self.z_hat)) @ (self.Z_bar-self.z_hat).T
         self.SIG_xz = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Z_bar-self.z_hat).T
@@ -93,8 +93,15 @@ class UKF:
         return x, y, theta
 
 
-    def h(self,x):
+    def h(self, state, landmark):
         print("Collect sigma measurements.")
+        x = landmark[0] - state[0]
+        y = landmark[1] - state[1]
+
+        r = np.sqrt(x**2 + y**2)
+        ph = wrapper(math.atan2(y,x)- state[2])
+
+        return r, ph
 
 
 
