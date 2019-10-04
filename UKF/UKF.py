@@ -3,11 +3,11 @@ import math
 from scipy.linalg import block_diag
 from numpy.linalg import cholesky as ch
 
-import pandas as pd
-desired_width=320
-pd.set_option('display.width', desired_width)
-np.set_printoptions(linewidth=desired_width)
-pd.set_option('display.max_columns',10)
+# import pandas as pd
+# desired_width=320
+# pd.set_option('display.width', desired_width)
+# np.set_printoptions(linewidth=desired_width)
+# pd.set_option('display.max_columns',10)
 
 def wrapper(ang):
     ang -= np.pi*2 * np.floor((ang + np.pi) / (2*np.pi))
