@@ -6,7 +6,7 @@ import numpy as np
 pi = np.pi
 
 class Plotter:
-    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]])):
+    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), fig_num=1):
         # Properties of the world
         self.lm = lm
         self.width = width
@@ -31,23 +31,25 @@ class Plotter:
         self.points = self.hmt @ np.asarray([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
         # First plot
-        fig2 = plt.figure(2)
-        fig2.clf()
+        fgn = "fig" + str(fig_num)
+        fgn = plt.figure(fig_num)
+        fgn.clf()
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
         plt.plot(self.points[0].T, self.points[1].T)
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
         plt.draw()
         plt.pause(0.001)
 
-    def update(self, x, y, theta):
+    def update(self, x, y, theta, figure_number):
         self.x_loc = x
         self.y_loc = y
         self.theta = theta
         self.calc_points()
 
         # Re-plot
-        fig2 = plt.figure(2)
-        fig2.clf()
+        fgn = "fig" + str(figure_number)
+        fgn = plt.figure(figure_number)
+        fgn.clf()
 
         # Plot landmarks
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')

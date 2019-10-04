@@ -13,7 +13,7 @@ class UKF:
         self.mu = np.array([[R2D2.x0],
                             [R2D2.y0],
                             [R2D2.theta0]])
-        self.SIG = np.diag([1, 1, 0.1])
+        self.SIG = np.diag([0.1, 0.1, 0.1])
         self.v = 0
         self.omega = 1
         meas = R2D2.calculate_measurements(World.Number_Landmarks,World.Landmarks)
@@ -74,14 +74,14 @@ class UKF:
 
         # Update mean and covariance
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
-        z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
-                           wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
-        self.mu = self.mu_bar + self.K @ z_diff
-        self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
-        self.current_landmark = 1
-        self.lines4_16_wo_7()
-        self.current_landmark = 2
-        self.lines4_16_wo_7()
+        # z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
+        #                    wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
+        # self.mu = self.mu_bar + self.K @ z_diff
+        # self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
+        # self.current_landmark = 1
+        # self.lines4_16_wo_7()
+        # self.current_landmark = 2
+        # self.lines4_16_wo_7()
 
     def g(self,u,state):
         v = u[0]
@@ -143,7 +143,6 @@ class UKF:
         self.M = np.array([[self.alpha1 * self.v ** 2 + self.alpha2 * self.omega ** 2, 0],
                            [0, self.alpha3 * self.v ** 2 + self.alpha4 * self.omega ** 2]])
         self.mu_a = np.hstack([self.mu.T, np.zeros([1, 4])])
-        self.mu_a = np.reshape(self.mu_a, [7, 1])
         self.mu_a = np.reshape(self.mu_a,[7,1])
         self.SIG_a = block_diag(self.SIG, self.M, self.Q)
 
@@ -162,14 +161,14 @@ class UKF:
         # Pass sigma points through motion model and compute Gaussian statistics
         self.Chi_bar = self.g(self.u+self.Chi_u,self.Chi_x)
 
-        # Calculate weights
-        self.w_m = np.ones([1,15])
-        self.w_c = np.ones([1, 15])
-        self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
-        self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
-        for spot in range(1,15):
-            self.w_m[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
-            self.w_c[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
+        # # Calculate weights
+        # self.w_m = np.ones([1,15])
+        # self.w_c = np.ones([1, 15])
+        # self.w_m[0] = self.lamb_duh/(self.n + self.lamb_duh)
+        # self.w_c[0] = self.w_m[0] + (1 - self.alpha**2 + self.beta)
+        # for spot in range(1,15):
+        #     self.w_m[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
+        #     self.w_c[0][spot] = 1 / (2 * (self.n + self.lamb_duh))
 
         self.mu_bar = self.Chi_x @ self.w_m.T
         self.SIG_bar = np.multiply(self.w_c,(self.Chi_bar-self.mu_bar)) @ (self.Chi_bar-self.mu_bar).T
@@ -184,36 +183,21 @@ class UKF:
         self.K = self.SIG_xz @ np.linalg.inv(self.S)
         z_diff = np.array([self.r[self.current_landmark]-self.z_hat[0],
                            wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
+        print("z_diff:", z_diff)
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
         print("mu0", self.mu)
         print("sig", self.SIG)
-        self.current_landmark = 1
-        self.lines4_16_wo_7()
-        print("mu1", self.mu)
-        print("sig", self.SIG)
-        self.current_landmark = 2
-        self.lines4_16_wo_7()
-        print("mu2", self.mu)
-        print("sig", self.SIG)
+        # self.current_landmark = 1
+        # self.lines4_16_wo_7()
+        # print("mu1", self.mu)
+        # print("sig", self.SIG)
+        # self.current_landmark = 2
+        # self.lines4_16_wo_7()
+        # print("mu2", self.mu)
+        # print("sig", self.SIG)
 
         return self.mu, self.SIG
-
-    # def features(self, r, ph):
-    #     for spot in range(0, self.num_landmarks):
-    #         diff_x = self.landmarks[0][spot]-self.mu_bar[0][0]
-    #         diff_y = self.landmarks[1][spot]-self.mu_bar[1][0]
-    #         q = diff_x ** 2 + diff_y ** 2
-    #         z_hat = np.array([[np.sqrt(q)],
-    #                           [wrapper(math.atan2(diff_y, diff_x)-self.mu_bar[2][0])]])
-    #         H = np.array([[-diff_x/np.sqrt(q), -diff_y/np.sqrt(q), 0],
-    #                       [diff_y/q, -diff_x/q, -1]])
-    #         S = H @ self.SIG_bar @ H.T + self.Q
-    #         K = self.SIG_bar @ H.T @ np.linalg.inv(S)
-    #         z_diff = np.array([r[spot]-z_hat[0],
-    #                            wrapper(ph[spot]-z_hat[1])])
-    #         self.mu_bar = self.mu_bar + K @ z_diff
-    #         self.SIG_bar = (np.eye(3) - K @ H) @ self.SIG_bar
 
 
 
