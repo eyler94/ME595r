@@ -14,10 +14,11 @@ class UKF:
                             [R2D2.y0],
                             [R2D2.theta0]])
         self.SIG = np.diag([1, 1, 0.1])
-        self.v = 1
+        self.v = 0
         self.omega = 1
-        self.r = np.array([0, 0, 0])
-        self.ph = np.array([0, 0, 0])
+        meas = R2D2.calculate_measurements(World.Number_Landmarks,World.Landmarks)
+        self.r = meas[0]
+        self.ph = meas[1]
         self.u = np.array([[self.v],
                       [self.omega]])
         self.current_landmark = 0
@@ -44,7 +45,7 @@ class UKF:
         self.beta = 2
         self.n = 7
         self.lamb_duh = self.alpha**2*(self.n+self.kappa)-self.n
-        self.gamma = np.sqrt(self.n+self.lamb_duh+self.n)
+        self.gamma = np.sqrt(self.n+self.lamb_duh)
         self.Chi_a = np.hstack([self.mu_a, self.mu_a+self.gamma*ch(self.SIG_a,lower=True), self.mu_a-self.gamma*ch(self.SIG_a,lower=True)])
         self.Chi_x = self.Chi_a[0:3,:]
         self.Chi_u = self.Chi_a[3:5, :]
@@ -185,10 +186,16 @@ class UKF:
                            wrapper(self.ph[self.current_landmark]-self.z_hat[1])])
         self.mu = self.mu_bar + self.K @ z_diff
         self.SIG = self.SIG_bar - self.K @ self.S @ self.K.T
+        print("mu0", self.mu)
+        print("sig", self.SIG)
         self.current_landmark = 1
         self.lines4_16_wo_7()
+        print("mu1", self.mu)
+        print("sig", self.SIG)
         self.current_landmark = 2
         self.lines4_16_wo_7()
+        print("mu2", self.mu)
+        print("sig", self.SIG)
 
         return self.mu, self.SIG
 

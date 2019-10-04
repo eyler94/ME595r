@@ -1,3 +1,4 @@
 # Ignore the following directory
 venv/
 ./.idea
+./Hayden/*

@@ -12,6 +12,10 @@ reload(World)
 reload(Plotter)
 reload(UKF)
 
+def wrapper(ang):
+    ang -= np.pi*2 * np.floor((ang + np.pi) / (2*np.pi))
+    return ang
+
 # Instantiate World, Robot, Plotter, and UKF
 R2D2 = R2D2.R2D2()
 World = World.World()
@@ -68,6 +72,7 @@ SIG_Y[0][0] = 2 * np.sqrt(mu_sig[1][1][1])
 SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
 
 for iter in range(1, int(Tf/Ts)):
+    print("time", time_data[0][iter])
     R2D2.update_velocity(time_data[0][iter])
     mu_sig = UKF.update(UKF.mu, UKF.SIG, R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
     MU_X[0][iter] = mu_sig[0][0]
@@ -107,7 +112,7 @@ plt.title('Error in Y')
 
 fig6 = plt.figure(6)
 fig6.clf()
-plt.plot(time_data[0], MU_TH[0]-TH[0])
+plt.plot(time_data[0], wrapper(MU_TH[0]-TH[0]))
 plt.plot(time_data[0], SIG_TH[0])
 plt.plot(time_data[0], -SIG_TH[0])
 plt.title('Error in Theta')
