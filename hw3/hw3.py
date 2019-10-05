@@ -90,8 +90,8 @@ for iter in range(1, int(Tf / Ts)):
 plt.ion()
 plt.interactive(False)
 
-for iter in range(0, X.size):
-    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter],1)
+# for iter in range(0, X.size):
+    # Plotter.update(X[0][iter], Y[0][iter], TH[0][iter],1)
     # PlotterUKF.update(MU_X[0][iter], MU_Y[0][iter], MU_TH[0][iter],2)
 
 fig3 = plt.figure(3)
