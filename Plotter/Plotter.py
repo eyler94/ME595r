@@ -6,7 +6,7 @@ import numpy as np
 pi = np.pi
 
 class Plotter:
-    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), fig_num=1):
+    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), particles=np.array([[0], [0]]), fig_num=1):
         # Properties of the world
         self.lm = lm
         self.width = width
@@ -16,6 +16,7 @@ class Plotter:
         self.x_loc = x
         self.y_loc = y
         self.theta = theta
+        self.particles = particles
 
         # Points to draw the robot
         circle = np.arange(0., 2 * pi, 0.01)
@@ -35,12 +36,14 @@ class Plotter:
         fgn = plt.figure(fig_num)
         fgn.clf()
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(self.particles[0], self.particles[1], '.', color='black')
         plt.plot(self.points[0].T, self.points[1].T)
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
         plt.draw()
         plt.pause(0.001)
 
-    def update(self, x, y, theta, figure_number):
+    def update(self, x, y, theta, particles, figure_number):
+        self.particles = particles
         self.x_loc = x
         self.y_loc = y
         self.theta = theta
@@ -53,6 +56,7 @@ class Plotter:
 
         # Plot landmarks
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(self.particles[0], self.particles[1], '.', color='black')
 
         # # Plot truth and measurements
         # plt.plot(self.lm[0][0],)
