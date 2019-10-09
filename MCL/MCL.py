@@ -41,23 +41,22 @@ class MCL:
         y_p = np.random.uniform(-10, 10, [1, self.num_particles])
         th_p = np.random.uniform(-np.pi, np.pi, [1, self.num_particles])
         particles = np.vstack([x_p, y_p, th_p])  # +state0
-        self.particles_t_1 = particles
         self.particles = particles
 
-    def update(self, particles_t_1, v, omega, r, ph):  # table 8.2
+    def update(self, v, omega, r, ph):  # Based on Table 8.2
         print("Updating particle filter.")
-        print("Initialize empty temp particle set.")
-        Xtbar = np.array([])
         print("Sample Motion Model to generate new particle.")
         u = np.array([[v],
                       [omega]])
-        particles = self.g(u, particles_t_1)
+        particles = self.g(u, self.particles)
         print("Measurement Model to calculate weight for that particle.")  # table 6.4+(-theta) and pg 123
         weights = self.weight(r, ph, particles)
         print("Append it to the temp particle set.")
         Xtbar = np.vstack([particles, weights])
-        print("Redraw particles for the real particle set according to their weight.")
-        # self.particles = particles
+        print("Redraw particles for the real particle set from the temp particle set according to their weight.")
+        self.particles = self.low_variance_sampler(Xtbar, weights)
+        print("Calculate the mean of x, y, and theta.")
+        print("Calculate the standard deviation of x, y, and theta.")
 
     def g(self, u, state):
         v = u[0]
@@ -73,7 +72,7 @@ class MCL:
 
         return x, y, theta
 
-    def weight(self, r, ph, Xtbar):
+    def weight(self, r, ph, Xtbar):  # Based on Table 6.4
         print("Generating weights.")
         P = 1
         for lm in range(0, self.num_landmarks):
@@ -85,16 +84,17 @@ class MCL:
             P *= prob(r[lm] - r_hat, self.sigma_r) * prob(ph[lm] - phi_hat, self.sigma_theta)
         return P
 
-    def low_variance_sampler(self, Xt, Wt):  ##### How do we deal with the 2d shape of the particles in this?
+    def low_variance_sampler(self, Xt, Wt):  # Based on Table 4.4
+        # How do we deal with the 2d shape of the particles in this?
         print("Low variance sampler.")
         Xtbar = np.array([]).reshape([3, 0])
         r = np.random.rand() * self.M_inv
-        c = Wt[0][0]
+        c = Wt[0]
         i = 1
-        for m in range(1, self.num_particles):
-            U = r + (m - 1) * self.M_inv
+        for m in range(self.num_particles):
+            U = r + m * self.M_inv
             while U > c:
                 i = i + 1
                 c = c + Wt[0][i]
-            Xtbar = np.hstack([Xtbar, Xt[0][i]])
+            Xtbar = np.hstack([Xtbar, Xt[i]])
         return Xtbar

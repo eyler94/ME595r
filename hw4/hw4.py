@@ -5,7 +5,7 @@ import sys
 sys.path.append('..')
 from R2D2 import R2D2
 from World import World
-from Plotter import Plotter as PLTTER
+from Plotter import PlotterParticles as PLTTER
 from MCL import MCL
 from importlib import reload
 
@@ -59,7 +59,7 @@ for iter in range(1, int(Tf / Ts)):
     PH[:, iter] = rph[1].reshape([World.Number_Landmarks, ])
 
 # Filter Data
-Particles = np.zeros([time_data.size, MCL.num_particles, MCL.num_particles])
+Particles = np.zeros([time_data.size, 3, MCL.num_particles])
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
@@ -67,33 +67,34 @@ SIG_X = np.zeros([1, time_data.size])
 SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
 
-# R2D2.update_velocity(time_data[0][0])
-# mu_sig = MCL.update(MCL.mu, MCL.SIG, R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
+R2D2.update_velocity(time_data[0][0])
+MCL.update(R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
+Particles[0] = MCL.particles
 # MU_X[0][0] = mu_sig[0][0]
 # MU_Y[0][0] = mu_sig[0][1]
 # MU_TH[0][0] = mu_sig[0][2]
 # SIG_X[0][0] = 2 * np.sqrt(mu_sig[1][0][0])
 # SIG_Y[0][0] = 2 * np.sqrt(mu_sig[1][1][1])
 # SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
-#
-# for iter in range(1, int(Tf / Ts)):
-#     # print("time", time_data[0][iter])
-#     R2D2.update_velocity(time_data[0][iter])
-#     mu_sig = MCL.update(MCL.mu, MCL.SIG, R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
+
+for iter in range(1, int(Tf / Ts)):
+    # print("time", time_data[0][iter])
+    R2D2.update_velocity(time_data[0][iter])
+    mu_sig = MCL.update(R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
+    Particles[iter] = MCL.particles
 #     MU_X[0][iter] = mu_sig[0][0]
 #     MU_Y[0][iter] = mu_sig[0][1]
 #     MU_TH[0][iter] = mu_sig[0][2]
 #     SIG_X[0][iter] = 2 * np.sqrt(mu_sig[1][0][0])
 #     SIG_Y[0][iter] = 2 * np.sqrt(mu_sig[1][1][1])
 #     SIG_TH[0][iter] = 2 * np.sqrt(mu_sig[1][2][2])
-#
+
 # Plot
 plt.ion()
 plt.interactive(False)
 
 for iter in range(0, X.size):
     Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], Particles[iter], 1)
-    # PlotterMCL.update(MU_X[0][iter], MU_Y[0][iter], MU_TH[0][iter],2)
 
 fig3 = plt.figure(3)
 fig3.clf()
