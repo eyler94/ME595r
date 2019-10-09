@@ -24,7 +24,8 @@ def wrapper(ang):
 R2D2 = R2D2.R2D2()
 World = World.World()
 MCL = MCL.MCL(R2D2, World)
-Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, MCL.particles, fig_num=1)
+Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, MCL.particles,
+                         fig_num=1)
 
 # Set Timeline
 Tf = 20  # Sec
@@ -57,14 +58,15 @@ for iter in range(1, int(Tf / Ts)):
     R[:, iter] = rph[0].reshape([World.Number_Landmarks, ])
     PH[:, iter] = rph[1].reshape([World.Number_Landmarks, ])
 
-# # Filter Data
-# MU_X = np.zeros([1, time_data.size])
-# MU_Y = np.zeros([1, time_data.size])
-# MU_TH = np.zeros([1, time_data.size])
-# SIG_X = np.zeros([1, time_data.size])
-# SIG_Y = np.zeros([1, time_data.size])
-# SIG_TH = np.zeros([1, time_data.size])
-#
+# Filter Data
+Particles = np.zeros([time_data.size, MCL.num_particles, MCL.num_particles])
+MU_X = np.zeros([1, time_data.size])
+MU_Y = np.zeros([1, time_data.size])
+MU_TH = np.zeros([1, time_data.size])
+SIG_X = np.zeros([1, time_data.size])
+SIG_Y = np.zeros([1, time_data.size])
+SIG_TH = np.zeros([1, time_data.size])
+
 # R2D2.update_velocity(time_data[0][0])
 # mu_sig = MCL.update(MCL.mu, MCL.SIG, R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
 # MU_X[0][0] = mu_sig[0][0]
@@ -90,7 +92,7 @@ plt.ion()
 plt.interactive(False)
 
 for iter in range(0, X.size):
-    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], MCL.particles, 1)
+    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], Particles[iter], 1)
     # PlotterMCL.update(MU_X[0][iter], MU_Y[0][iter], MU_TH[0][iter],2)
 
 fig3 = plt.figure(3)
