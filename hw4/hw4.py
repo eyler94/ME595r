@@ -78,7 +78,7 @@ Particles[0] = MCL.particles
 # SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
 
 for iter in range(1, int(Tf / Ts)):
-    # print("time", time_data[0][iter])
+    print("time", time_data[0][iter])
     R2D2.update_velocity(time_data[0][iter])
     mu_sig = MCL.update(R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
     Particles[iter] = MCL.particles

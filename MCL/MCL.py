@@ -40,7 +40,8 @@ class MCL:
         x_p = np.random.uniform(-10, 10, [1, self.num_particles])
         y_p = np.random.uniform(-10, 10, [1, self.num_particles])
         th_p = np.random.uniform(-np.pi, np.pi, [1, self.num_particles])
-        particles = np.vstack([x_p, y_p, th_p])  # +state0
+        # particles = np.vstack([x_p, y_p, th_p])  # +state0
+        particles = np.zeros([3, 10]) + state0
         self.particles = particles
 
     def update(self, v, omega, r, ph):  # Based on Table 8.2
@@ -49,6 +50,9 @@ class MCL:
         u = np.array([[v],
                       [omega]])
         particles = self.g(u, self.particles)
+        # particles = np.array([[particles[0]],
+        #                       [particles[1]],
+        #                       [particles[2]]])
         print("Measurement Model to calculate weight for that particle.")  # table 6.4+(-theta) and pg 123
         weights = self.weight(r, ph, particles)
         print("Append it to the temp particle set.")
@@ -70,7 +74,9 @@ class MCL:
         y = y + v / omega * np.cos(theta) - v / omega * np.cos(wrapper(theta + omega * self.ts))
         theta = wrapper(theta + omega * self.ts)
 
-        return x, y, theta
+        return np.array([[x],
+                         [y],
+                         [theta]])
 
     def weight(self, r, ph, Xtbar):  # Based on Table 6.4
         print("Generating weights.")
@@ -81,7 +87,9 @@ class MCL:
             theta = Xtbar[2]
             r_hat = np.sqrt(x ** 2 + y ** 2)
             phi_hat = wrapper(np.arctan(y, x) - theta)
-            P *= prob(r[lm] - r_hat, self.sigma_r) * prob(ph[lm] - phi_hat, self.sigma_theta)
+            P *= prob(r[lm] - r_hat, self.sigma_r) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta)
+        # if P.any() < 0.001:
+        #     P = 0.001
         return P
 
     def low_variance_sampler(self, Xt, Wt):  # Based on Table 4.4
@@ -94,7 +102,11 @@ class MCL:
         for m in range(self.num_particles):
             U = r + m * self.M_inv
             while U > c:
+                # print("U:", U)
+                # print("c:", c)
                 i = i + 1
-                c = c + Wt[0][i]
-            Xtbar = np.hstack([Xtbar, Xt[i]])
+                if i == self.num_particles:
+                    print("Failed to find high enough weight.")
+                c = c + Wt[i]
+            Xtbar = np.hstack([Xtbar, Xt[:][i]])
         return Xtbar
