@@ -59,7 +59,7 @@ for iter in range(1, int(Tf / Ts)):
     PH[:, iter] = rph[1].reshape([World.Number_Landmarks, ])
 
 # Filter Data
-Particles = np.zeros([time_data.size, 3, MCL.num_particles])
+Particles = np.zeros([time_data.size, 4, MCL.num_particles])
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
@@ -70,24 +70,25 @@ SIG_TH = np.zeros([1, time_data.size])
 R2D2.update_velocity(time_data[0][0])
 MCL.update(R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
 Particles[0] = MCL.particles
-# MU_X[0][0] = mu_sig[0][0]
-# MU_Y[0][0] = mu_sig[0][1]
-# MU_TH[0][0] = mu_sig[0][2]
-# SIG_X[0][0] = 2 * np.sqrt(mu_sig[1][0][0])
-# SIG_Y[0][0] = 2 * np.sqrt(mu_sig[1][1][1])
-# SIG_TH[0][0] = 2 * np.sqrt(mu_sig[1][2][2])
+MU_X[0][0] = MCL.mu_x
+MU_Y[0][0] = MCL.mu_y
+MU_TH[0][0] = MCL.mu_th
+SIG_X[0][0] = 2 * MCL.sig_x
+SIG_Y[0][0] = 2 * MCL.sig_y
+SIG_TH[0][0] = 2 * MCL.sig_th
+
 
 for iter in range(1, int(Tf / Ts)):
-    print("time", time_data[0][iter])
+    # print("time", time_data[0][iter])
     R2D2.update_velocity(time_data[0][iter])
     mu_sig = MCL.update(R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
     Particles[iter] = MCL.particles
-#     MU_X[0][iter] = mu_sig[0][0]
-#     MU_Y[0][iter] = mu_sig[0][1]
-#     MU_TH[0][iter] = mu_sig[0][2]
-#     SIG_X[0][iter] = 2 * np.sqrt(mu_sig[1][0][0])
-#     SIG_Y[0][iter] = 2 * np.sqrt(mu_sig[1][1][1])
-#     SIG_TH[0][iter] = 2 * np.sqrt(mu_sig[1][2][2])
+    MU_X[0][iter] = MCL.mu_x
+    MU_Y[0][iter] = MCL.mu_y
+    MU_TH[0][iter] = MCL.mu_th
+    SIG_X[0][iter] = 2 * MCL.sig_x
+    SIG_Y[0][iter] = 2 * MCL.sig_y
+    SIG_TH[0][iter] = 2 * MCL.sig_th
 
 # Plot
 plt.ion()
@@ -99,27 +100,27 @@ for iter in range(0, X.size):
 fig3 = plt.figure(3)
 fig3.clf()
 plt.plot(X.T, Y.T)
-# plt.plot(MU_X.T, MU_Y.T)
+plt.plot(MU_X.T, MU_Y.T)
 plt.title('Path')
 
 fig4 = plt.figure(4)
 fig4.clf()
-# plt.plot(time_data[0], MU_X[0] - X[0])
-# plt.plot(time_data[0], SIG_X[0])
-# plt.plot(time_data[0], -SIG_X[0])
+plt.plot(time_data[0], MU_X[0] - X[0])
+plt.plot(time_data[0], SIG_X[0])
+plt.plot(time_data[0], -SIG_X[0])
 plt.title('Error in X')
 #
 fig5 = plt.figure(5)
 fig5.clf()
-# plt.plot(time_data[0], MU_Y[0] - Y[0])
-# plt.plot(time_data[0], SIG_Y[0])
-# plt.plot(time_data[0], -SIG_Y[0])
+plt.plot(time_data[0], MU_Y[0] - Y[0])
+plt.plot(time_data[0], SIG_Y[0])
+plt.plot(time_data[0], -SIG_Y[0])
 plt.title('Error in Y')
 #
 fig6 = plt.figure(6)
 fig6.clf()
-# plt.plot(time_data[0], wrapper(MU_TH[0] - TH[0]))
-# plt.plot(time_data[0], SIG_TH[0])
-# plt.plot(time_data[0], -SIG_TH[0])
+plt.plot(time_data[0], wrapper(MU_TH[0] - TH[0]))
+plt.plot(time_data[0], SIG_TH[0])
+plt.plot(time_data[0], -SIG_TH[0])
 plt.title('Error in Theta')
 plt.show()
