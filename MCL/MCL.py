@@ -30,8 +30,12 @@ class MCL:
     def __init__(self, R2D2, World):
         printer("Initializing Particle Filter.")
         # World Properties
-        self.R2D2 = R2D2
-        self.World = World
+        self.alpha1 = R2D2.alpha1
+        self.alpha2 = R2D2.alpha2
+        self.alpha3 = R2D2.alpha3
+        self.alpha4 = R2D2.alpha4
+        self.alpha5 = R2D2.alpha5
+        self.alpha6 = R2D2.alpha6
         self.u = np.array([[R2D2.v_c],
                            [R2D2.omega_c]])
         self.z = R2D2.calculate_measurements(World.Number_Landmarks, World.Landmarks)
@@ -42,7 +46,7 @@ class MCL:
         self.sigma_theta = R2D2.sigma_theta
 
         # Filter Properties
-        self.num_particles = 1000
+        self.num_particles = 10
         self.M_inv = 1 / self.num_particles
         state0 = np.array([[R2D2.x0],
                            [R2D2.y0],
@@ -50,9 +54,9 @@ class MCL:
         dist = 0.1
         x_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         y_p = np.random.uniform(-dist, dist, [1, self.num_particles])
-        th_p = np.random.uniform(-np.pi/32, np.pi/32, [1, self.num_particles])
-        particles = np.vstack([x_p, y_p, th_p]) + state0
-        # particles = np.zeros([3, self.num_particles]) + state0
+        th_p = np.random.uniform(-np.pi / 32, np.pi / 32, [1, self.num_particles])
+        # particles = np.vstack([x_p, y_p, th_p]) + state0
+        particles = np.zeros([3, self.num_particles]) + state0
         self.particles = particles
 
         # Filter Stats
@@ -68,14 +72,14 @@ class MCL:
         printer("Sample Motion Model to generate new particle.")
         u = np.array([[v],
                       [omega]])
-        particles = self.g(u, self.particles)
-        particles = np.array([particles[0],
-                              particles[1],
-                              particles[2]])
+        self.particles = self.g(u, self.particles)
+        self.particles = np.array([self.particles[0],
+                                   self.particles[1],
+                                   self.particles[2]])
         printer("Measurement Model to calculate weight for that particle.")  # table 6.4+(-theta) and pg 123
-        weights = self.weight(r, ph, particles)
+        weights = self.weight(r, ph, self.particles)
         printer("Append it to the temp particle set.")
-        Xtbar = np.vstack([particles, weights])
+        Xtbar = np.vstack([self.particles, weights])
         printer("Redraw particles for the real particle set from the temp particle set according to their weight.")
         self.particles = self.low_variance_sampler(Xtbar, weights)
         printer("Calculate the mean of x, y, and theta.")
@@ -91,13 +95,17 @@ class MCL:
         v = u[0]
         omega = u[1]
 
+        v_hat = v + np.random.randn() * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
+        omega_hat = omega + np.random.randn() * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
+        gamma_hat = np.random.randn() * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
+
         x = state[0]
         y = state[1]
         theta = state[2]
 
-        x = x - v / omega * np.sin(theta) + v / omega * np.sin(wrapper(theta + omega * self.ts))
-        y = y + v / omega * np.cos(theta) - v / omega * np.cos(wrapper(theta + omega * self.ts))
-        theta = wrapper(theta + omega * self.ts)
+        x = x - v_hat / omega_hat * np.sin(theta) + v_hat / omega_hat * np.sin(wrapper(theta + omega_hat * self.ts))
+        y = y + v_hat / omega_hat * np.cos(theta) - v_hat / omega_hat * np.cos(wrapper(theta + omega_hat * self.ts))
+        theta = wrapper(theta + omega_hat * self.ts + gamma_hat * self.ts)
 
         return x, y, theta
 
@@ -115,7 +123,6 @@ class MCL:
         return P
 
     def low_variance_sampler(self, Xt, Wt):  # Based on Table 4.4
-        # How do we deal with the 2d shape of the particles in this?
         printer("Low variance sampler.")
         Xtbar = np.array([]).reshape([4, 0])
         r = np.random.rand() * self.M_inv

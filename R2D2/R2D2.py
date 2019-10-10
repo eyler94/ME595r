@@ -26,15 +26,15 @@ class R2D2:
         self.tf = tf  # s
 
         # Noise parameters
-        self.alpha1 = 0.1
-        self.alpha2 = 0.01
-        self.alpha3 = 0.01
-        self.alpha4 = 0.1
-        self.alpha5 = 0.01
-        self.alpha6 = 0.01
+        self.alpha1 = 00.1 * 0
+        self.alpha2 = 0.01 * 0
+        self.alpha3 = 0.01 * 0
+        self.alpha4 = 00.1 * 0
+        self.alpha5 = 0.01 * 0
+        self.alpha6 = 0.01 * 0
 
-        self.sigma_r = 0.1  # m
-        self.sigma_theta = 0.05  # rad
+        self.sigma_r = 0.1 * 0       # m
+        self.sigma_theta = 0.05 * 0  # rad
 
         # Velocity models
         t = self.t0

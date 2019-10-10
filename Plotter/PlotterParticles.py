@@ -77,7 +77,9 @@ class Plotter:
         plt.plot(self.particles[0], self.particles[1], '.', color='black')
         # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)
-        plt.axis([self.x_loc-3, self.x_loc+3, self.y_loc-3, self.y_loc+3])
+        spacing = 3
+        plt.axis([self.x_loc-spacing, self.x_loc+spacing, self.y_loc-spacing, self.y_loc+spacing])
+        # plt.axis([self.particles[0][0]-spacing, self.particles[0][0]+spacing, self.particles[1][0]-spacing, self.particles[1][0]+spacing])
         plt.draw()
         plt.pause(0.001)
 
