@@ -48,14 +48,14 @@ class R2D2:
     def propagate_dynamics(self, time):
         self.update_velocity(time)
         v_hat = self.v_c + np.random.randn() * np.sqrt(self.alpha1 * self.v_c ** 2 + self.alpha2 * self.omega_c ** 2)
-        omega_hat = self.omega_c + np.random.randn() * np.sqrt(
-            self.alpha3 * self.v_c ** 2 + self.alpha4 * self.omega_c ** 2)
+        omega_hat = self.omega_c + np.random.randn() * np.sqrt(self.alpha3 * self.v_c ** 2 + self.alpha4 * self.omega_c ** 2)
+        gamma_hat = np.random.randn() * np.sqrt(self.alpha5 * self.v_c ** 2 + self.alpha6 * self.omega_c ** 2)
 
         self.x = self.x - v_hat / omega_hat * np.sin(self.theta) + v_hat / omega_hat * np.sin(
             wrapper(self.theta + omega_hat * self.ts))
         self.y = self.y + v_hat / omega_hat * np.cos(self.theta) - v_hat / omega_hat * np.cos(
             wrapper(self.theta + omega_hat * self.ts))
-        self.theta = wrapper(self.theta + omega_hat * self.ts)
+        self.theta = wrapper(self.theta + omega_hat * self.ts + gamma_hat*self.ts)
 
         return self.x, self.y, self.theta
 
@@ -73,5 +73,5 @@ class R2D2:
             x = landmarks[0][iter] - self.x
             y = landmarks[1][iter] - self.y
             R[iter] = np.sqrt(x ** 2 + y ** 2) + np.random.randn() * self.sigma_r
-            PH[iter] = wrapper(math.atan2(y, x) - self.theta + np.random.randn() * self.sigma_theta)
+            PH[iter] = wrapper(np.arctan2(y, x) - self.theta + np.random.randn() * self.sigma_theta)
         return R, PH

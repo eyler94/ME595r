@@ -41,7 +41,6 @@ class Plotter:
         plt.pause(0.001)
 
     def update(self, x, y, theta, figure_number):
-        self.particles = particles
         self.x_loc = x
         self.y_loc = y
         self.theta = theta

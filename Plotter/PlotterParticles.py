@@ -6,7 +6,7 @@ import numpy as np
 pi = np.pi
 
 class Plotter:
-    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), particles=np.array([[0], [0]]), fig_num=1):
+    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), particles=np.array([[0], [0]])):
         # Properties of the world
         self.lm = lm
         self.width = width
@@ -32,9 +32,8 @@ class Plotter:
         self.points = self.hmt @ np.asarray([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
         # First plot
-        fgn = "fig" + str(fig_num)
-        fgn = plt.figure(fig_num)
-        fgn.clf()
+        fig1 = plt.figure(1)
+        fig1.clf()
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
         plt.plot(self.particles[0], self.particles[1], '.', color='black')
         plt.plot(self.points[0].T, self.points[1].T)
@@ -42,7 +41,16 @@ class Plotter:
         plt.draw()
         plt.pause(0.001)
 
-    def update(self, x, y, theta, particles, figure_number):
+        fig2 = plt.figure(2)
+        fig2.clf()
+        plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(self.particles[0], self.particles[1], '.', color='black')
+        plt.plot(self.points[0].T, self.points[1].T)
+        plt.axis([self.x_loc-3, self.x_loc+3, self.y_loc-3, self.y_loc+3])
+        plt.draw()
+        plt.pause(0.001)
+
+    def update(self, x, y, theta, particles):
         self.particles = particles
         self.x_loc = x
         self.y_loc = y
@@ -50,21 +58,26 @@ class Plotter:
         self.calc_points()
 
         # Re-plot
-        fgn = "fig" + str(figure_number)
-        fgn = plt.figure(figure_number)
-        fgn.clf()
-
+        fig1 = plt.figure(1)
+        fig1.clf()
         # Plot landmarks
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
         plt.plot(self.particles[0], self.particles[1], '.', color='black')
-
-        # # Plot truth and measurements
-        # plt.plot(self.lm[0][0],)
-
         # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)
-
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
+        plt.draw()
+        plt.pause(0.001)
+
+        # Re-plot
+        fig2 = plt.figure(2)
+        fig2.clf()
+        # Plot landmarks
+        plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(self.particles[0], self.particles[1], '.', color='black')
+        # Plot robot
+        plt.plot(self.points[0].T, self.points[1].T)
+        plt.axis([self.x_loc-3, self.x_loc+3, self.y_loc-3, self.y_loc+3])
         plt.draw()
         plt.pause(0.001)
 

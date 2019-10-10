@@ -8,6 +8,7 @@ from World import World
 from Plotter import PlotterParticles as PLTTER
 from MCL import MCL
 from importlib import reload
+from time import sleep
 
 reload(R2D2)
 reload(World)
@@ -24,8 +25,7 @@ def wrapper(ang):
 R2D2 = R2D2.R2D2()
 World = World.World()
 MCL = MCL.MCL(R2D2, World)
-Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, MCL.particles,
-                         fig_num=1)
+Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, MCL.particles)
 
 # Set Timeline
 Tf = 20  # Sec
@@ -41,14 +41,14 @@ TH = np.zeros([1, time_data.size])
 R = np.zeros([World.Number_Landmarks, time_data.size])  # Range Measurements
 PH = np.zeros([World.Number_Landmarks, time_data.size])  # Bearing Measurements
 
-X[0][0] = R2D2.x0
-Y[0][0] = R2D2.y0
-TH[0][0] = R2D2.theta0
-rph = R2D2.calculate_measurements(World.Number_Landmarks, World.Landmarks)
-R[:, 0] = rph[0].reshape([World.Number_Landmarks, ])
-PH[:, 0] = rph[1].reshape([World.Number_Landmarks, ])
+# X[0][0] = R2D2.x0
+# Y[0][0] = R2D2.y0
+# TH[0][0] = R2D2.theta0
+# rph = R2D2.calculate_measurements(World.Number_Landmarks, World.Landmarks)
+# R[:, 0] = rph[0].reshape([World.Number_Landmarks, ])
+# PH[:, 0] = rph[1].reshape([World.Number_Landmarks, ])
 
-for iter in range(1, int(Tf / Ts)):
+for iter in range(0, int(Tf / Ts)):
     xyth = R2D2.propagate_dynamics(time_data[0][iter])
     X[0][iter] = xyth[0]
     Y[0][iter] = xyth[1]
@@ -67,18 +67,7 @@ SIG_X = np.zeros([1, time_data.size])
 SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
 
-R2D2.update_velocity(time_data[0][0])
-MCL.update(R2D2.v_c, R2D2.omega_c, R[:, 0], PH[:, 0])
-Particles[0] = MCL.particles
-MU_X[0][0] = MCL.mu_x
-MU_Y[0][0] = MCL.mu_y
-MU_TH[0][0] = MCL.mu_th
-SIG_X[0][0] = 2 * MCL.sig_x
-SIG_Y[0][0] = 2 * MCL.sig_y
-SIG_TH[0][0] = 2 * MCL.sig_th
-
-
-for iter in range(1, int(Tf / Ts)):
+for iter in range(0, int(Tf / Ts)):
     # print("time", time_data[0][iter])
     R2D2.update_velocity(time_data[0][iter])
     mu_sig = MCL.update(R2D2.v_c, R2D2.omega_c, R[:, iter], PH[:, iter])
@@ -95,7 +84,8 @@ plt.ion()
 plt.interactive(False)
 
 for iter in range(0, X.size):
-    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], Particles[iter], 1)
+    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], Particles[iter])
+    # sleep(0.1)
 
 fig3 = plt.figure(3)
 fig3.clf()

@@ -30,6 +30,8 @@ class MCL:
     def __init__(self, R2D2, World):
         printer("Initializing Particle Filter.")
         # World Properties
+        self.R2D2 = R2D2
+        self.World = World
         self.u = np.array([[R2D2.v_c],
                            [R2D2.omega_c]])
         self.z = R2D2.calculate_measurements(World.Number_Landmarks, World.Landmarks)
@@ -45,10 +47,11 @@ class MCL:
         state0 = np.array([[R2D2.x0],
                            [R2D2.y0],
                            [R2D2.theta0]])
-        x_p = np.random.uniform(-10, 10, [1, self.num_particles])
-        y_p = np.random.uniform(-10, 10, [1, self.num_particles])
-        th_p = np.random.uniform(-np.pi, np.pi, [1, self.num_particles])
-        particles = np.vstack([x_p, y_p, th_p])  # +state0
+        dist = 0.1
+        x_p = np.random.uniform(-dist, dist, [1, self.num_particles])
+        y_p = np.random.uniform(-dist, dist, [1, self.num_particles])
+        th_p = np.random.uniform(-np.pi/32, np.pi/32, [1, self.num_particles])
+        particles = np.vstack([x_p, y_p, th_p]) + state0
         # particles = np.zeros([3, self.num_particles]) + state0
         self.particles = particles
 
@@ -106,7 +109,7 @@ class MCL:
             y = self.landmarks[1][lm] - Xtbar[1]
             theta = Xtbar[2]
             r_hat = np.sqrt(x ** 2 + y ** 2)
-            phi_hat = wrapper(np.arctan(y, x) - theta)
+            phi_hat = wrapper(np.arctan2(y, x) - theta)
             P *= prob(r[lm] - r_hat, self.sigma_r) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta)
         P = P / np.sum(P)
         return P
