@@ -55,7 +55,7 @@ class MCL:
         x_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         y_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         th_p = np.random.uniform(-np.pi / 32, np.pi / 32, [1, self.num_particles])
-        particles = np.vstack([x_p, y_p, th_p]) #+ state0
+        particles = np.vstack([x_p, y_p, th_p])  # + state0
         # particles = np.zeros([3, self.num_particles]) + state0
         self.particles = particles
 
@@ -95,9 +95,9 @@ class MCL:
         v = u[0]
         omega = u[1]
 
-        v_hat = v + np.random.randn() * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
-        omega_hat = omega + np.random.randn() * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
-        gamma_hat = np.random.randn() * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
+        v_hat = v + np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
+        omega_hat = omega + np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
+        gamma_hat = np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
 
         x = state[0]
         y = state[1]
