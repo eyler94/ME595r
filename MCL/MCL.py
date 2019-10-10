@@ -46,17 +46,17 @@ class MCL:
         self.sigma_theta = R2D2.sigma_theta
 
         # Filter Properties
-        self.num_particles = 10
+        self.num_particles = 1000
         self.M_inv = 1 / self.num_particles
         state0 = np.array([[R2D2.x0],
                            [R2D2.y0],
                            [R2D2.theta0]])
-        dist = 0.1
+        dist = 10
         x_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         y_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         th_p = np.random.uniform(-np.pi / 32, np.pi / 32, [1, self.num_particles])
-        # particles = np.vstack([x_p, y_p, th_p]) + state0
-        particles = np.zeros([3, self.num_particles]) + state0
+        particles = np.vstack([x_p, y_p, th_p]) #+ state0
+        # particles = np.zeros([3, self.num_particles]) + state0
         self.particles = particles
 
         # Filter Stats

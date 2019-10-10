@@ -78,7 +78,7 @@ plt.interactive(False)
 
 for iter in range(0, X.size):
     Plotter.update(X[0][iter], Y[0][iter], TH[0][iter], Particles[iter])
-    # sleep(0.1)
+    sleep(1)
 
 fig3 = plt.figure(3)
 fig3.clf()
