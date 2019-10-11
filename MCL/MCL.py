@@ -73,9 +73,7 @@ class MCL:
         u = np.array([[v],
                       [omega]])
         self.particles = self.g(u, self.particles)
-        self.particles = np.array([self.particles[0],
-                                   self.particles[1],
-                                   self.particles[2]])
+        self.particles = np.vstack([self.particles[0], self.particles[1],self.particles[2]])
         printer("Measurement Model to calculate weight for that particle.")  # table 6.4+(-theta) and pg 123
         weights = self.weight(r, ph, self.particles)
         printer("Append it to the temp particle set.")
@@ -95,9 +93,9 @@ class MCL:
         v = u[0]
         omega = u[1]
 
-        v_hat = v + np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
-        omega_hat = omega + np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
-        gamma_hat = np.random.randn(self.num_particles, 1) * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
+        v_hat = v + np.random.randn(1, self.num_particles) * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
+        omega_hat = omega + np.random.randn(1, self.num_particles) * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
+        gamma_hat = np.random.randn(1, self.num_particles) * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
 
         x = state[0]
         y = state[1]
