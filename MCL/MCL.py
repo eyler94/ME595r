@@ -54,7 +54,7 @@ class MCL:
         dist = 10
         x_p = np.random.uniform(-dist, dist, [1, self.num_particles])
         y_p = np.random.uniform(-dist, dist, [1, self.num_particles])
-        th_p = np.random.uniform(-np.pi / 32, np.pi / 32, [1, self.num_particles])
+        th_p = np.random.uniform(-np.pi, np.pi, [1, self.num_particles])
         particles = np.vstack([x_p, y_p, th_p])  # + state0
         # particles = np.zeros([3, self.num_particles]) + state0
         self.particles = particles
@@ -73,7 +73,7 @@ class MCL:
         u = np.array([[v],
                       [omega]])
         self.particles = self.g(u, self.particles)
-        self.particles = np.vstack([self.particles[0], self.particles[1],self.particles[2]])
+        self.particles = np.vstack([self.particles[0], self.particles[1], self.particles[2]])
         printer("Measurement Model to calculate weight for that particle.")  # table 6.4+(-theta) and pg 123
         weights = self.weight(r, ph, self.particles)
         printer("Append it to the temp particle set.")
@@ -94,7 +94,8 @@ class MCL:
         omega = u[1]
 
         v_hat = v + np.random.randn(1, self.num_particles) * np.sqrt(self.alpha1 * v ** 2 + self.alpha2 * omega ** 2)
-        omega_hat = omega + np.random.randn(1, self.num_particles) * np.sqrt(self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
+        omega_hat = omega + np.random.randn(1, self.num_particles) * np.sqrt(
+            self.alpha3 * v ** 2 + self.alpha4 * omega ** 2)
         gamma_hat = np.random.randn(1, self.num_particles) * np.sqrt(self.alpha5 * v ** 2 + self.alpha6 * omega ** 2)
 
         x = state[0]
@@ -116,7 +117,7 @@ class MCL:
             theta = Xtbar[2]
             r_hat = np.sqrt(x ** 2 + y ** 2)
             phi_hat = wrapper(np.arctan2(y, x) - theta)
-            P *= prob(r[lm] - r_hat, self.sigma_r) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta)
+            P *= prob(r[lm] - r_hat, self.sigma_r**2) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta**2)
         P = P / np.sum(P)
         return P
 
