@@ -18,7 +18,7 @@ class World:
         # Landmarks
         rand = False
         if rand:
-            self.Number_Landmarks = 3
+            self.Number_Landmarks = 50
             self.Landmarks = np.random.randint(-10, 10, [2, self.Number_Landmarks])
         else:
             self.Number_Landmarks = 3
