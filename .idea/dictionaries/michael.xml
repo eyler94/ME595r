@@ -2,6 +2,8 @@
   <dictionary name="michael">
     <words>
       <w>cholesky</w>
+      <w>odometry</w>
+      <w>proc</w>
       <w>sysd</w>
       <w>tustin</w>
       <w>vstack</w>

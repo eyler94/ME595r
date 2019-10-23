@@ -14,7 +14,7 @@ def wrapper(ang):
     return ang
 
 
-def prob(a, b_sqrd): # Table 5.2
+def prob(a, b_sqrd):  # Table 5.2
     return 1 / np.sqrt(2 * np.pi * b_sqrd) * np.exp(-0.5 * a ** 2 / b_sqrd)
 
 
@@ -118,14 +118,14 @@ class MCL:
             theta = Xtbar[2]
             r_hat = np.sqrt(x ** 2 + y ** 2)
             phi_hat = wrapper(np.arctan2(y, x) - theta)
-            P *= prob(r[lm] - r_hat, self.sigma_r**2) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta**2)
+            P *= prob(r[lm] - r_hat, self.sigma_r ** 2) * prob(wrapper(ph[lm] - phi_hat), self.sigma_theta ** 2)
             # P = P / np.sum(P)
         P = P / np.sum(P)
         return P
 
     def low_variance_sampler(self, Xt, Wt):  # Based on Table 4.4
         printer("Low variance sampler.")
-        Xtbar = np.zeros([self.num_states+1, self.num_particles])
+        Xtbar = np.zeros([self.num_states + 1, self.num_particles])
         r = np.random.rand() * self.M_inv
         c = Wt[0]
         i = 0
@@ -135,15 +135,14 @@ class MCL:
             while U > c:
                 i = i + 1
                 c = c + Wt[i]
-            Xtbar[:,m] = Xt[:, i]
+            Xtbar[:, m] = Xt[:, i]
             indx = np.hstack([indx, i])
 
         # Dr. McLain's trick to increase variance to a certain standard
         P = np.cov(Xt[:3])
         uniq = len(np.unique(indx))
-        if uniq*self.M_inv < 0.5:
-            Q = P/((self.num_particles*uniq)**(1/self.num_states))
+        if uniq * self.M_inv < 0.5:
+            Q = P / ((self.num_particles * uniq) ** (1 / self.num_states))
             Xtbar[:3] += Q @ np.random.randn(self.num_states, self.num_particles)
-
 
         return Xtbar
