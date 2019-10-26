@@ -1,3 +1,6 @@
 [submodule "team_for"]
 	path = team_for
 	url = https://github.com/davidcGIThub/team_for.git
+[submodule "cell_estimator"]
+	path = cell_estimator
+	url = https://github.com/matthewk-rydalch/cell_estimator.git
