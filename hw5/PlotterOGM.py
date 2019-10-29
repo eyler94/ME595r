@@ -5,8 +5,9 @@ import numpy as np
 
 pi = np.pi
 
+
 class Plotter:
-    def __init__(self, x=0, y=0, theta=pi/2, width=100, height=100):
+    def __init__(self, x=0, y=0, theta=pi / 2, width=100, height=100):
         # Properties of the world
         self.width = width
         self.height = height
@@ -34,10 +35,11 @@ class Plotter:
         fgn.clf()
         plt.plot(self.points[0].T, self.points[1].T)
         plt.axis([0, self.width, 0, self.height])
+        plt.imshow(np.random.randint(0, 1, [100, 100]), "Greys")
         plt.draw()
         plt.pause(0.001)
 
-    def update(self, x, y, theta):
+    def update(self, x, y, theta, info_map):
         self.x_loc = x
         self.y_loc = y
         self.theta = theta
@@ -47,12 +49,14 @@ class Plotter:
         fgn = plt.figure(1)
         fgn.clf()
 
-        # Plot robot
+        # Plot robot and world
         plt.plot(self.points[0].T, self.points[1].T)
-
+        plt.imshow(info_map, "Greys")
         plt.axis([0, self.width, 0, self.height])
         plt.draw()
         plt.pause(0.001)
+
+
 
     def calc_points(self):
         self.hmt_2d()
