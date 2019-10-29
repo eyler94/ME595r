@@ -28,8 +28,8 @@ angles = mat['thk']
 # p_no_hit_low = 0.3
 
 # World Parameters
-map_Height = 100  # meters
-map_Width = 100  # meters
+map_Height = 102  # meters
+map_Width = 102  # meters
 
 
 def wrapper(ang):
@@ -47,5 +47,15 @@ for spot in range(0, state.shape[1]):
                    state[1, spot],
                    state[2, spot],
                    ogm.info)
+    # sleep(0.1)
+
+# for spot in range(0, state.shape[1]):
+#     for
+#     ogm.update_itemized(state[:, spot], meas[:, :, spot])
+#     Plotter.update(state[0, spot],
+#                    state[1, spot],
+#                    state[2, spot],
+#                    ogm.info)
+
 
 input()

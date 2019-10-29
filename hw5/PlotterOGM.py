@@ -7,7 +7,7 @@ pi = np.pi
 
 
 class Plotter:
-    def __init__(self, x=0, y=0, theta=pi / 2, width=100, height=100):
+    def __init__(self, x=0, y=0, theta=pi / 2, width=102, height=102):
         # Properties of the world
         self.width = width
         self.height = height
@@ -35,7 +35,7 @@ class Plotter:
         fgn.clf()
         plt.plot(self.points[0].T, self.points[1].T)
         plt.axis([0, self.width, 0, self.height])
-        plt.imshow(np.random.randint(0, 1, [100, 100]), "Greys")
+        plt.imshow(np.random.randint(0, 1, [102, 102]), "Greys")
         plt.draw()
         plt.pause(0.001)
 
