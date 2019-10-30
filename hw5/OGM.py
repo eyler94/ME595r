@@ -58,15 +58,15 @@ class OGM:
         theta_k = rads[k]  # Angle measurement that is closest to the ith grid square
 
         # Evaluate which probabilities should be assigned to each grid square
-        statement1 = np.logical_or(r > np.minimum(self.z_max, z_k + self.alpha / 2),
-                                   np.abs(phi - theta_k) > self.beta / 2).astype(np.double)
-        statement2 = np.logical_and(np.logical_and(z_k < self.z_max, np.abs(r - z_k) < self.alpha / 2),
+        statement1 = np.logical_or(r > np.minimum(self.z_max, z_k + self.alpha * 0.5),
+                                   np.abs(phi - theta_k) > self.beta * 0.5).astype(np.double)
+        statement2 = np.logical_and(np.logical_and(z_k < self.z_max, np.abs(r - z_k) < self.alpha * 0.5),
                                     np.logical_not(statement1)).astype(np.double)
         statement3 = np.logical_and(np.logical_and(r <= z_k, np.logical_not(statement1)), np.logical_not(statement2)).astype(np.double)
 
-        l_total = statement1 + statement2 + statement3
-        if np.max(l_total) > 1 or np.min(l_total) < 1:
-            print("ahhhhhhh")
+        # l_total = statement1 + statement2 + statement3
+        # if np.max(l_total) > 1 or np.min(l_total) < 1:
+        #     print("ahhhhhhh")
 
         # Calculate grid probabilities
         statement1 *= p_to_l(self.info) + self.l_0 - self.l_0

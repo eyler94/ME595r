@@ -49,13 +49,4 @@ for spot in range(0, state.shape[1]):
                    ogm.info)
     # sleep(0.1)
 
-# for spot in range(0, state.shape[1]):
-#     for
-#     ogm.update_itemized(state[:, spot], meas[:, :, spot])
-#     Plotter.update(state[0, spot],
-#                    state[1, spot],
-#                    state[2, spot],
-#                    ogm.info)
-
-
-input()
+input("Press enter to quit.")
