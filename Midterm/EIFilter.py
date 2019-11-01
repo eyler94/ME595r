@@ -9,12 +9,11 @@ def wrapper(ang):
 
 class EIF:
     def __init__(self, Quad, World):
-        # print("Init")
         self.ts = Quad.ts
         self.mu = np.array([[Quad.x0],
                             [Quad.y0],
                             [Quad.theta0]])
-        self.SIG = np.diag([10, 10, 10])
+        self.SIG = np.diag([1, 1, 1])
         self.landmarks = World.Landmarks
         self.num_landmarks = World.Number_Landmarks
 
@@ -53,7 +52,6 @@ class EIF:
         return mu_bar
 
     def update(self, xi, Omega, v, omega, r, ph):
-        # print("Updating.")
         self.xi = xi
         self.Omega = Omega
         self.SIG = inv(self.Omega)
