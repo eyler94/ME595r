@@ -6,7 +6,7 @@ import numpy as np
 pi = np.pi
 
 class Plotter:
-    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]]), fig_num=1):
+    def __init__(self, x=-5, y=-3, theta=pi/2, width=20, height=20, lm=np.array([[0], [0]])):
         # Properties of the world
         self.lm = lm
         self.width = width
@@ -31,8 +31,7 @@ class Plotter:
         self.points = self.hmt @ np.asarray([self.x_points, self.y_points, np.ones([1, self.x_points.size])])
 
         # First plot
-        fgn = "fig" + str(fig_num)
-        fgn = plt.figure(fig_num)
+        fgn = plt.figure(1)
         fgn.clf()
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
         plt.plot(self.points[0].T, self.points[1].T)
@@ -40,15 +39,14 @@ class Plotter:
         plt.draw()
         plt.pause(0.001)
 
-    def update(self, x, y, theta, figure_number):
+    def update(self, x, y, theta):
         self.x_loc = x
         self.y_loc = y
         self.theta = theta
         self.calc_points()
 
         # Re-plot
-        fgn = "fig" + str(figure_number)
-        fgn = plt.figure(figure_number)
+        fgn = plt.figure(1)
         fgn.clf()
 
         # Plot landmarks
@@ -60,6 +58,30 @@ class Plotter:
         # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)
 
+        plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
+        plt.draw()
+        plt.pause(0.001)
+
+    def update_with_path(self, x, y, theta, true_x, true_y, mu_x, mu_y):
+        self.x_loc = x
+        self.y_loc = y
+        self.theta = theta
+        self.calc_points()
+
+        # Re-plot
+        fgn = plt.figure(1)
+        fgn.clf()
+
+        # Plot landmarks
+        plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+
+        # Plot robot
+        plt.plot(self.points[0].T, self.points[1].T)
+
+        # Plot path and estimate
+        plt.plot(true_x.T,true_y.T,mu_x.T,mu_y.T)
+
+        # plt.legend(['landmarks','robot','true path','estimated path'])
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
         plt.draw()
         plt.pause(0.001)

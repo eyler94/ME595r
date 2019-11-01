@@ -85,7 +85,3 @@ class EKF:
                                wrapper(ph[spot]-z_hat[1])])
             self.mu_bar = self.mu_bar + K @ z_diff
             self.SIG_bar = (np.eye(3) - K @ H) @ self.SIG_bar
-
-
-
-
