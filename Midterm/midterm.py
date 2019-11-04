@@ -33,9 +33,9 @@ eif = EIFilter.EIF(quad, World)
 # Reading in data from the mat file provided
 mat = spio.loadmat('midterm_data.mat')
 state = mat['X_tr']  # x, y, theta
-X = state[0]
-Y = state[1]
-TH = state[2]
+X = state[0, :-1]
+Y = state[1, :-1]
+TH = state[2, :-1]
 omega_com = mat['om_c']
 omega_act = mat['om']
 velocity_com = mat['v_c']
@@ -43,6 +43,7 @@ velocity_act = mat['v']
 range_tr = mat['range_tr']
 bearing_tr = mat['bearing_tr']
 time = mat['t']
+time = time[:, :-1]
 
 # Filter Data
 MU_X = np.zeros([1, time.shape[1]])
@@ -53,8 +54,9 @@ SIG_Y = np.zeros([1, time.shape[1]])
 SIG_TH = np.zeros([1, time.shape[1]])
 xi_vec = np.zeros([3, time.shape[1]])
 
-for iter in range(0, state.shape[1]):
-    eif.update(eif.xi, eif.Omega, velocity_com[0, iter], omega_com[0, iter], range_tr[iter, :], bearing_tr[iter, :])
+for iter in range(0, time.shape[1]):
+    eif.update(eif.xi, eif.Omega, velocity_com[0, iter], omega_com[0, iter], range_tr[iter + 1, :],
+               bearing_tr[iter + 1, :])
     MU_X[0][iter] = eif.mu[0]
     MU_Y[0][iter] = eif.mu[1]
     MU_TH[0][iter] = eif.mu[2]
