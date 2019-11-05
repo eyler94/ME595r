@@ -41,6 +41,8 @@ def wrapper(ang):
 Plotter = PLTTER.Plotter(state[0, 0], state[1, 0], state[2, 0], map_Width, map_Height)
 ogm = OG.OGM()
 
+sleep(6)
+
 for spot in range(0, state.shape[1]):
     ogm.update(state[:, spot], meas[:, :, spot])
     Plotter.update(state[0, spot],
