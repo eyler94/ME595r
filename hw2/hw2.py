@@ -73,7 +73,7 @@ plt.ion()
 plt.interactive(False)
 
 for iter in range(0, X.size):
-    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter],1)
+    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter])
 
 fig3 = plt.figure(3)
 fig3.clf()
