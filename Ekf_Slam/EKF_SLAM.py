@@ -42,7 +42,7 @@ class EkfSlam:
         self.alpha4 = R2D2.alpha4
         self.M = self.calc_M(v, omega)
         state_block = np.diag([1, 1, 0.1])
-        lm_block = np.zeros([self.num_landmarks * 2, self.num_landmarks * 2])
+        lm_block = np.eye(self.num_landmarks * 2, self.num_landmarks * 2)*1e5
         self.SIG = block_diag(state_block, lm_block)
         self.SIG_bar = self.calc_Sig_bar()
         self.Q = np.array([[R2D2.sigma_r ** 2, 0],

@@ -74,9 +74,8 @@ for spot in range(0, int(Tf / Ts)):
 plt.ion()
 plt.interactive(False)
 
-for spot in range(0, X.size):
-    # Plotter.update(X[0][spot], Y[0][spot], TH[0][spot])
-    Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
+# for spot in range(0, X.size):
+    # Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
 
 fig3 = plt.figure(3)
 fig3.clf()
