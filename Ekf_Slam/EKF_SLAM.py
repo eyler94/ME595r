@@ -16,9 +16,11 @@ def wrapper(ang):
 class EkfSlam:
     def __init__(self, R2D2, World):
         print("Init")
-        self.F = np.hstack([np.eye(3), np.zeros([3, 2 * World.Number_Landmarks])])
-        self.F_j = np.zeros([World.Number_Landmarks, 5, 3 + 2 * World.Number_Landmarks])
-        for spot in range(0, World.Number_Landmarks):
+        self.landmarks = World.Landmarks
+        self.num_landmarks = World.Number_Landmarks
+        self.F = np.hstack([np.eye(3), np.zeros([3, 2 * self.num_landmarks])])
+        self.F_j = np.zeros([self.num_landmarks, 5, 3 + 2 * self.num_landmarks])
+        for spot in range(0, self.num_landmarks):
             self.F_j[spot, :3:, :3:] = np.eye(3)
             self.F_j[spot, 3::, 3 + spot * 2:3 + spot * 2 + 2:] = np.eye(2)
         v = 1
@@ -29,7 +31,7 @@ class EkfSlam:
         self.mu_state = np.array([[R2D2.x0],
                                   [R2D2.y0],
                                   [R2D2.theta0]])
-        self.mu_landmarks = np.zeros([World.Number_Landmarks * 2, 1])
+        self.mu_landmarks = np.zeros([self.num_landmarks * 2, 1])
         self.mu = np.vstack([self.mu_state, self.mu_landmarks])
         self.mu_bar = self.calc_g(v, theta, omega, th_om_dt)
         self.G = self.calc_G(theta, th_om_dt, v, omega)
@@ -40,13 +42,11 @@ class EkfSlam:
         self.alpha4 = R2D2.alpha4
         self.M = self.calc_M(v, omega)
         state_block = np.diag([1, 1, 0.1])
-        lm_block = np.zeros([World.Number_Landmarks * 2, World.Number_Landmarks * 2])
+        lm_block = np.zeros([self.num_landmarks * 2, self.num_landmarks * 2])
         self.SIG = block_diag(state_block, lm_block)
         self.SIG_bar = self.calc_Sig_bar()
         self.Q = np.array([[R2D2.sigma_r ** 2, 0],
                            [0, R2D2.sigma_theta ** 2]])
-        self.landmarks = World.Landmarks
-        self.num_landmarks = World.Number_Landmarks
 
     def calc_g(self, v, theta, omega, th_om_dt):
         mat = np.array([[- v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
@@ -56,7 +56,7 @@ class EkfSlam:
         return mu_bar
 
     def calc_G(self, theta, th_om_dt, v, omega):
-        G = np.eye(9) + self.F.T @ np.array([[0, 0, - v / omega * np.cos(theta) + v / omega * np.cos(th_om_dt)],
+        G = np.eye(3+2*self.num_landmarks) + self.F.T @ np.array([[0, 0, - v / omega * np.cos(theta) + v / omega * np.cos(th_om_dt)],
                                              [0, 0, - v / omega * np.sin(theta) + v / omega * np.sin(th_om_dt)],
                                              [0, 0, 0]]) @ self.F
         return G
@@ -101,7 +101,7 @@ class EkfSlam:
         for spot in range(0, self.num_landmarks):
             if not np.isnan(r[spot]):
                 if self.mu[3 + spot * 2] == 0:
-                    print("Creating a new landmark.")
+                    # print("Creating a new landmark.")
                     self.mu_bar[3 + spot * 2] = self.mu_bar[0] + r[spot] * np.cos(ph[spot] + self.mu_bar[2])  # x of lm
                     self.mu_bar[3 + spot * 2 + 1] = self.mu_bar[1] + r[spot] * np.sin(
                         ph[spot] + self.mu_bar[2])  # y of lm
