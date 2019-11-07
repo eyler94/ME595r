@@ -26,7 +26,7 @@ def wrapper(ang):
 R2D2 = R2D2.R2D2()
 World = World.World()
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
-EKF = EKF.EKF(R2D2, World)
+EKF = EKF_SLAM.ekf_slam(R2D2, World)
 
 # Set Timeline
 Tf = 20  # Sec
