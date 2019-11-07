@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.linalg import block_diag
+from scipy.linalg import inv
 
 
 def wrapper(ang):
@@ -12,10 +13,14 @@ def wrapper(ang):
     return ang
 
 
-class ekf_slam:
+class EkfSlam:
     def __init__(self, R2D2, World):
         print("Init")
         self.F = np.hstack([np.eye(3), np.zeros([3, 2 * World.Number_Landmarks])])
+        self.F_j = np.zeros([World.Number_Landmarks, 5, 3 + 2 * World.Number_Landmarks])
+        for spot in range(0, World.Number_Landmarks):
+            self.F_j[spot, :3:, :3:] = np.eye(3)
+            self.F_j[spot, 3::, 3 + spot * 2:3 + spot * 2 + 2:] = np.eye(2)
         v = 1
         omega = 1
         theta = 1
@@ -24,7 +29,7 @@ class ekf_slam:
         self.mu_state = np.array([[R2D2.x0],
                                   [R2D2.y0],
                                   [R2D2.theta0]])
-        self.mu_landmarks = np.zeros([World.Number_Landmarks*2, 1])
+        self.mu_landmarks = np.zeros([World.Number_Landmarks * 2, 1])
         self.mu = np.vstack([self.mu_state, self.mu_landmarks])
         self.mu_bar = self.calc_g(v, theta, omega, th_om_dt)
         self.G = self.calc_G(theta, th_om_dt, v, omega)
@@ -33,12 +38,11 @@ class ekf_slam:
         self.alpha2 = R2D2.alpha2
         self.alpha3 = R2D2.alpha3
         self.alpha4 = R2D2.alpha4
-        self.M = np.array([[self.alpha1 * v ** 2 + self.alpha2 * omega ** 2, 0],
-                           [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
+        self.M = self.calc_M(v, omega)
         state_block = np.diag([1, 1, 0.1])
-        lm_block = np.zeros([World.Number_Landmarks*2, World.Number_Landmarks*2])
+        lm_block = np.zeros([World.Number_Landmarks * 2, World.Number_Landmarks * 2])
         self.SIG = block_diag(state_block, lm_block)
-        self.SIG_bar = self.G @ self.SIG @ self.G.T + self.F.T @ self.V @ self.M @ self.V.T @ self.F
+        self.SIG_bar = self.calc_Sig_bar()
         self.Q = np.array([[R2D2.sigma_r ** 2, 0],
                            [0, R2D2.sigma_theta ** 2]])
         self.landmarks = World.Landmarks
@@ -67,17 +71,25 @@ class ekf_slam:
                       [0., self.ts]])
         return V
 
+    def calc_M(self, v, omega):
+        M = np.array([[self.alpha1 * v ** 2 + self.alpha2 * omega ** 2, 0],
+                      [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
+        return M
+
+    def calc_Sig_bar(self):
+        Sig_bar = self.G @ self.SIG @ self.G.T + self.F.T @ self.V @ self.M @ self.V.T @ self.F
+        return Sig_bar
+
     def update(self, mu, SIG, v, omega, r, ph):
         self.mu = mu
         self.SIG = SIG
         theta = self.mu[2][0]
         th_om_dt = wrapper(theta + omega * self.ts)
+        self.mu_bar = self.calc_g(v, theta, omega, th_om_dt)
         self.G = self.calc_G(theta, th_om_dt, v, omega)
         self.V = self.calc_V(theta, th_om_dt, v, omega)
-        self.M = np.array([[self.alpha1 * v ** 2 + self.alpha2 * omega ** 2, 0],
-                           [0, self.alpha3 * v ** 2 + self.alpha4 * omega ** 2]])
-        self.mu_bar = self.calc_g(v, theta, omega, th_om_dt)
-        self.SIG_bar = self.G @ self.SIG @ self.G.T + self.V @ self.M @ self.V.T
+        self.M = self.calc_M(v, omega)
+        self.SIG_bar = self.calc_Sig_bar()
         self.features(r, ph)
 
         self.mu = self.mu_bar
@@ -87,16 +99,21 @@ class ekf_slam:
 
     def features(self, r, ph):
         for spot in range(0, self.num_landmarks):
-            diff_x = self.landmarks[0][spot] - self.mu_bar[0][0]
-            diff_y = self.landmarks[1][spot] - self.mu_bar[1][0]
-            q = diff_x ** 2 + diff_y ** 2
-            z_hat = np.array([[np.sqrt(q)],
-                              [wrapper(np.arctan2(diff_y, diff_x) - self.mu_bar[2][0])]])
-            H = np.array([[-diff_x / np.sqrt(q), -diff_y / np.sqrt(q), 0],
-                          [diff_y / q, -diff_x / q, -1]])
-            S = H @ self.SIG_bar @ H.T + self.Q
-            K = self.SIG_bar @ H.T @ np.linalg.inv(S)
-            z_diff = np.array([r[spot] - z_hat[0],
-                               wrapper(ph[spot] - z_hat[1])])
-            self.mu_bar = self.mu_bar + K @ z_diff
-            self.SIG_bar = (np.eye(3) - K @ H) @ self.SIG_bar
+            if not np.isnan(r[spot]):
+                if self.mu[3 + spot * 2] == 0:
+                    print("Creating a new landmark.")
+                    self.mu_bar[3 + spot * 2] = self.mu_bar[0] + r[spot] * np.cos(ph[spot] + self.mu_bar[2])  # x of lm
+                    self.mu_bar[3 + spot * 2 + 1] = self.mu_bar[1] + r[spot] * np.sin(
+                        ph[spot] + self.mu_bar[2])  # y of lm
+                dx = self.mu_bar[3 + spot * 2][0] - self.mu_bar[0][0]
+                dy = self.mu_bar[3 + spot * 2 + 1][0] - self.mu_bar[1][0]
+                q = dx ** 2 + dy ** 2
+                z_hat = np.array([[np.sqrt(q)],
+                                  [wrapper(np.arctan2(dy, dx) - self.mu_bar[2][0])]])
+                H = 1/q * np.array([[-np.sqrt(q)*dx, -np.sqrt(q)*dy, 0, np.sqrt(q)*dx, np.sqrt(q)*dy],
+                                    [dy, -dx, -q, -dy, dx]]) @ self.F_j[spot]
+                K = self.SIG_bar @ H.T @ inv(H @ self.SIG_bar @ H.T + self.Q)
+                z_diff = np.array([r[spot] - z_hat[0],
+                                   wrapper(ph[spot] - z_hat[1])])
+                self.mu_bar = self.mu_bar + K @ z_diff
+                self.SIG_bar = (np.eye(3+self.num_landmarks*2) - K @ H) @ self.SIG_bar
