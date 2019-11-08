@@ -30,8 +30,8 @@ def wrapper(ang):
 
 
 # Instantiate World, Robot, Plotter, and ekfslam
-R2D2 = R2D2.R2D2(FoV=np.pi)
-World = World.World(rand=False, num_lm=15)
+R2D2 = R2D2.R2D2(FoV=np.pi/3)
+World = World.World(rand=True, num_lm=15)
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
 ekfslam = EKF_SLAM.EkfSlam(R2D2, World)
 
