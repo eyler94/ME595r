@@ -16,6 +16,13 @@ reload(World)
 reload(Plotter)
 reload(EKF_SLAM)
 
+import pandas as pd
+
+desired_width = 320
+pd.set_option('display.width', desired_width)
+np.set_printoptions(linewidth=desired_width)
+pd.set_option('display.max_columns', 10)
+
 
 def wrapper(ang):
     ang -= np.pi * 2 * np.floor((ang + np.pi) / (2 * np.pi))
@@ -24,7 +31,7 @@ def wrapper(ang):
 
 # Instantiate World, Robot, Plotter, and ekfslam
 R2D2 = R2D2.R2D2(FoV=np.pi)
-World = World.World(rand=True, num_lm=15)
+World = World.World(rand=False, num_lm=15)
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
 ekfslam = EKF_SLAM.EkfSlam(R2D2, World)
 
@@ -56,11 +63,11 @@ for spot in range(0, int(Tf / Ts)):
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
-MU_LM = np.zeros([World.Number_Landmarks*2, time_data.size])
+MU_LM = np.zeros([World.Number_Landmarks * 2, time_data.size])
 SIG_X = np.zeros([1, time_data.size])
 SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
-SIG_LM = np.zeros([time_data.size, World.Number_Landmarks*2, World.Number_Landmarks*2])
+SIG_LM = np.zeros([time_data.size, World.Number_Landmarks * 2, World.Number_Landmarks * 2])
 
 for spot in range(0, int(Tf / Ts)):
     R2D2.update_velocity(time_data[0][spot])
@@ -72,13 +79,15 @@ for spot in range(0, int(Tf / Ts)):
     SIG_X[0][spot] = 2 * np.sqrt(ekfslam.SIG[0][0])
     SIG_Y[0][spot] = 2 * np.sqrt(ekfslam.SIG[1][1])
     SIG_TH[0][spot] = 2 * np.sqrt(ekfslam.SIG[2][2])
+    SIG_LM[spot] = ekfslam.SIG[3::, 3::]
 
 # Plot
 plt.ion()
 plt.interactive(False)
 
 for spot in range(0, X.size):
-    Plotter.update_with_path_and_lm(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot], MU_LM[:,spot])
+    Plotter.update_with_path_and_lm(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
+                                    MU_Y[0][:spot], MU_LM[:, spot], SIG_LM[spot])
 #     Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
 
 

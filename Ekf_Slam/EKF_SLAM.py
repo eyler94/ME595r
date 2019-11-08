@@ -41,7 +41,7 @@ class EkfSlam:
         self.alpha3 = R2D2.alpha3
         self.alpha4 = R2D2.alpha4
         self.M = self.calc_M(v, omega)
-        state_block = np.diag([0, 0, 0.1])
+        state_block = np.diag([0, 0, 1e-5])
         lm_block = np.eye(self.num_landmarks * 2, self.num_landmarks * 2)*1e5
         self.SIG = block_diag(state_block, lm_block)
         self.SIG_bar = self.calc_Sig_bar()
@@ -94,8 +94,6 @@ class EkfSlam:
 
         self.mu = self.mu_bar
         self.SIG = self.SIG_bar
-
-        return self.mu, self.SIG
 
     def features(self, r, ph):
         for spot in range(0, self.num_landmarks):
