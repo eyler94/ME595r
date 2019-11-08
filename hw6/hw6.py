@@ -29,7 +29,7 @@ Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.heig
 EKF = EKF_SLAM.EkfSlam(R2D2, World)
 
 # Set Timeline
-Tf = 20  # Sec
+Tf = 50  # Sec
 Ts = 0.1  # Sec
 time_data = np.arange(0., Tf, Ts)
 time_data = time_data.reshape([1, int(Tf / Ts)])
@@ -75,7 +75,7 @@ plt.ion()
 plt.interactive(False)
 
 # for spot in range(0, X.size):
-    # Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
+#     Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
 
 fig3 = plt.figure(3)
 fig3.clf()
