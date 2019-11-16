@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 
 sys.path.append('..')
-from Ekf_Slam import EKF_SLAM
+from Fast_Slam import Fast_SLAM
 from R2D2 import R2D2
 from World import World
 from Plotter import Plotter
@@ -14,7 +14,7 @@ from importlib import reload
 reload(R2D2)
 reload(World)
 reload(Plotter)
-reload(EKF_SLAM)
+reload(Fast_SLAM)
 
 import pandas as pd
 
@@ -33,7 +33,7 @@ def wrapper(ang):
 R2D2 = R2D2.R2D2(FoV=np.pi/3)
 World = World.World(rand=True, num_lm=15)
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
-ekfslam = EKF_SLAM.EkfSlam(R2D2, World)
+fastslam = Fast_SLAM.FastSlam(R2D2, World)
 
 # Set Timeline
 Tf = 50  # Sec
