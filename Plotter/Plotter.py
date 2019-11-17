@@ -100,12 +100,12 @@ class Plotter:
 
         # Plot landmarks and estimates
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
-        plt.plot(mu_lm[::2], mu_lm[1::2], 'o', color='brown')
-        for spot in range(0, self.lm.shape[1]):
-            u, s, v = np.linalg.svd(sig_lm[spot:spot + 2, spot:spot + 2])
-            c = u @ np.diag(2*np.sqrt(s))
-            ellipse = c @ self.cir_points
-            plt.plot(ellipse[0]+mu_lm[spot*2], ellipse[1]+mu_lm[spot*2+1], color='green')
+        # plt.plot(mu_lm[::2], mu_lm[1::2], 'o', color='brown')
+        # for spot in range(0, self.lm.shape[1]):
+        #     u, s, v = np.linalg.svd(sig_lm[spot:spot + 2, spot:spot + 2])
+        #     c = u @ np.diag(2*np.sqrt(s))
+        #     ellipse = c @ self.cir_points
+        #     plt.plot(ellipse[0]+mu_lm[spot*2], ellipse[1]+mu_lm[spot*2+1], color='green')
 
         # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)

@@ -30,8 +30,8 @@ def wrapper(ang):
 
 
 # Instantiate World, Robot, Plotter, and ekfslam
-R2D2 = R2D2.R2D2(FoV=np.pi/3)
-World = World.World(rand=True, num_lm=15)
+R2D2 = R2D2.R2D2(FoV=np.pi)
+World = World.World(rand=False, num_lm=15)
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
 fastslam = Fast_SLAM.FastSlam(R2D2, World)
 
@@ -63,33 +63,33 @@ for spot in range(0, int(Tf / Ts)):
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
-MU_LM = np.zeros([World.Number_Landmarks * 2, time_data.size])
+MU_LM = np.zeros([World.Number_Landmarks, 2, time_data.size])
 SIG_X = np.zeros([1, time_data.size])
 SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
-SIG_LM = np.zeros([time_data.size, World.Number_Landmarks * 2, World.Number_Landmarks * 2])
+SIG_LM = np.zeros([World.Number_Landmarks, World.Number_Landmarks, time_data.size])
 
 for spot in range(0, int(Tf / Ts)):
     R2D2.update_velocity(time_data[0][spot])
-    ekfslam.update(ekfslam.mu, ekfslam.SIG, R2D2.v_c, R2D2.omega_c, R[:, spot], PH[:, spot])
-    MU_X[0][spot] = ekfslam.mu[0]
-    MU_Y[0][spot] = ekfslam.mu[1]
-    MU_TH[0][spot] = ekfslam.mu[2]
-    MU_LM[:, spot][None] = ekfslam.mu[3::].T
-    SIG_X[0][spot] = 2 * np.sqrt(ekfslam.SIG[0][0])
-    SIG_Y[0][spot] = 2 * np.sqrt(ekfslam.SIG[1][1])
-    SIG_TH[0][spot] = 2 * np.sqrt(ekfslam.SIG[2][2])
-    SIG_LM[spot] = ekfslam.SIG[3::, 3::]
+    fastslam.update(R[:, spot], PH[:, spot], R2D2.v_c, R2D2.omega_c, fastslam.particles)
+    MU_X[0][spot] = fastslam.mu[0]
+    MU_Y[0][spot] = fastslam.mu[1]
+    MU_TH[0][spot] = fastslam.mu[2]
+    MU_LM[:, :, spot] = fastslam.mu_lm
+    SIG_X[0][spot] = 2 * np.sqrt(fastslam.SIG[0][0])
+    SIG_Y[0][spot] = 2 * np.sqrt(fastslam.SIG[1][1])
+    SIG_TH[0][spot] = 2 * np.sqrt(fastslam.SIG[2][2])
+    SIG_LM[:, :, spot] = fastslam.SIG_lm
 
 # Plot
 plt.ion()
 plt.interactive(False)
 
 for spot in range(0, X.size):
-    Plotter.update_with_path_and_lm(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
-                                    MU_Y[0][:spot], MU_LM[:, spot], SIG_LM[spot])
-#     Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot], MU_Y[0][:spot])
-
+    # Plotter.update_with_path_and_lm(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
+    #                                 MU_Y[0][:spot], MU_LM[:, spot], SIG_LM[spot])
+    Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
+                             MU_Y[0][:spot])
 
 fig3 = plt.figure(3)
 fig3.clf()
@@ -120,5 +120,5 @@ plt.title('Error in Theta')
 
 fig7 = plt.figure(7)
 fig7.clf()
-plt.imshow(ekfslam.SIG, "Greys")
+plt.imshow(fastslam.SIG, "Greys")
 plt.show()
