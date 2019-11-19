@@ -36,7 +36,7 @@ Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.heig
 fastslam = Fast_SLAM.FastSlam(R2D2, World)
 
 # Set Timeline
-Tf = 50  # Sec
+Tf = 20  # Sec
 Ts = 0.1  # Sec
 time_data = np.arange(0., Tf, Ts)
 time_data = time_data.reshape([1, int(Tf / Ts)])
@@ -60,36 +60,37 @@ for spot in range(0, int(Tf / Ts)):
     PH[:, spot] = rph[1].reshape([World.Number_Landmarks, ])
 
 # Filter Data
+MU_ALL = np.zeros([time_data.size, 3, fastslam.num_particles])
 MU_X = np.zeros([1, time_data.size])
 MU_Y = np.zeros([1, time_data.size])
 MU_TH = np.zeros([1, time_data.size])
-MU_LM = np.zeros([World.Number_Landmarks, 2, time_data.size])
+MU_LM = np.zeros([time_data.size, World.Number_Landmarks, 2])
 SIG_X = np.zeros([1, time_data.size])
 SIG_Y = np.zeros([1, time_data.size])
 SIG_TH = np.zeros([1, time_data.size])
-SIG_LM = np.zeros([World.Number_Landmarks, World.Number_Landmarks, time_data.size])
+SIG_LM = np.zeros([time_data.size, 2, World.Number_Landmarks * 2])
 
 for spot in range(0, int(Tf / Ts)):
     R2D2.update_velocity(time_data[0][spot])
-    fastslam.update(R[:, spot], PH[:, spot], R2D2.v_c, R2D2.omega_c, fastslam.particles)
+    fastslam.update(R[:, spot], PH[:, spot], R2D2.v_c, R2D2.omega_c)
+    MU_ALL[spot, :, :] = fastslam.mu_all
     MU_X[0][spot] = fastslam.mu[0]
     MU_Y[0][spot] = fastslam.mu[1]
     MU_TH[0][spot] = fastslam.mu[2]
-    MU_LM[:, :, spot] = fastslam.mu_lm
+    MU_LM[spot, :, :] = fastslam.mu_lm
     SIG_X[0][spot] = 2 * np.sqrt(fastslam.SIG[0][0])
     SIG_Y[0][spot] = 2 * np.sqrt(fastslam.SIG[1][1])
     SIG_TH[0][spot] = 2 * np.sqrt(fastslam.SIG[2][2])
-    SIG_LM[:, :, spot] = fastslam.SIG_lm
+    SIG_LM[spot, :, :] = fastslam.SIG_lm
 
 # Plot
 plt.ion()
 plt.interactive(False)
 
 for spot in range(0, X.size):
-    # Plotter.update_with_path_and_lm(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
-    #                                 MU_Y[0][:spot], MU_LM[:, spot], SIG_LM[spot])
-    Plotter.update_with_path(X[0][spot], Y[0][spot], TH[0][spot], X[0][:spot], Y[0][:spot], MU_X[0][:spot],
-                             MU_Y[0][:spot])
+    Plotter.update_with_path_particles_and_lm(X[0][spot], Y[0][spot], TH[0][spot], MU_ALL[spot], X[0][:spot],
+                                              Y[0][:spot], MU_X[0][:spot],
+                                              MU_Y[0][:spot], MU_LM[spot], SIG_LM[spot])
 
 fig3 = plt.figure(3)
 fig3.clf()

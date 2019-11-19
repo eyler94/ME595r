@@ -100,12 +100,12 @@ class Plotter:
 
         # Plot landmarks and estimates
         plt.plot(self.lm[0], self.lm[1], 'x', color='black')
-        # plt.plot(mu_lm[::2], mu_lm[1::2], 'o', color='brown')
-        # for spot in range(0, self.lm.shape[1]):
-        #     u, s, v = np.linalg.svd(sig_lm[spot:spot + 2, spot:spot + 2])
-        #     c = u @ np.diag(2*np.sqrt(s))
-        #     ellipse = c @ self.cir_points
-        #     plt.plot(ellipse[0]+mu_lm[spot*2], ellipse[1]+mu_lm[spot*2+1], color='green')
+        plt.plot(mu_lm[:, 0], mu_lm[:, 1], 'o', color='brown')
+        for spot in range(0, self.lm.shape[1]):
+            u, s, v = np.linalg.svd(sig_lm[spot:spot + 2, spot:spot + 2])
+            c = u @ np.diag(2 * np.sqrt(s))
+            ellipse = c @ self.cir_points
+            plt.plot(ellipse[0] + mu_lm[spot * 2], ellipse[1] + mu_lm[spot * 2 + 1], color='green')
 
         # Plot robot
         plt.plot(self.points[0].T, self.points[1].T)
@@ -113,8 +113,52 @@ class Plotter:
         # Plot path and estimate
         plt.plot(true_x.T, true_y.T, mu_x.T, mu_y.T)
 
-        # plt.legend(['landmarks','robot','true path','estimated path'])
+        plt.legend(['landmarks', 'robot', 'true path', 'estimated path'])
         plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
+        plt.draw()
+        plt.pause(0.001)
+
+    def update_with_path_particles_and_lm(self, x, y, theta, mu_all, true_x, true_y, mu_x, mu_y, mu_lm, sig_lm):
+        self.x_loc = x
+        self.y_loc = y
+        self.theta = theta
+        self.calc_points()
+
+        # Re-plot
+        fgn = plt.figure(1)
+        fgn.clf()
+
+        # Plot landmarks and estimates
+        plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(mu_all[0], mu_all[1], '.', color='black')
+        plt.plot(mu_lm[:, 0], mu_lm[:, 1], 'o', color='brown')
+        for spot in range(0, self.lm.shape[1]):
+            u, s, v = np.linalg.svd(sig_lm[:, spot * 2:spot * 2 + 2])
+            c = u @ np.diag(2 * np.sqrt(s))
+            ellipse = c @ self.cir_points
+            plt.plot(ellipse[0] + mu_lm[spot, 0], ellipse[1] + mu_lm[spot, 1], color='green')
+
+        # Plot robot
+        plt.plot(self.points[0].T, self.points[1].T)
+
+        # Plot path and estimate
+        plt.plot(true_x.T, true_y.T, mu_x.T, mu_y.T)
+
+        plt.legend(['landmarks', 'robot', 'true path', 'estimated path'])
+        plt.axis([-self.width / 2., self.width / 2., -self.height / 2., self.height / 2.])
+        plt.draw()
+        plt.pause(0.001)
+
+        # Plot Particles
+        fig2 = plt.figure(2)
+        fig2.clf()
+        # Plot landmarks
+        plt.plot(self.lm[0], self.lm[1], 'x', color='black')
+        plt.plot(mu_all[0], mu_all[1], '.', color='black')
+        # Plot robot
+        plt.plot(self.points[0].T, self.points[1].T)
+        spacing = 3
+        plt.axis([self.x_loc - spacing, self.x_loc + spacing, self.y_loc - spacing, self.y_loc + spacing])
         plt.draw()
         plt.pause(0.001)
 
