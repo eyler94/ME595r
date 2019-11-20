@@ -36,7 +36,7 @@ Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.heig
 ekfslam = EKF_SLAM.EkfSlam(R2D2, World)
 
 # Set Timeline
-Tf = 50  # Sec
+Tf = 30  # Sec
 Ts = 0.1  # Sec
 time_data = np.arange(0., Tf, Ts)
 time_data = time_data.reshape([1, int(Tf / Ts)])
