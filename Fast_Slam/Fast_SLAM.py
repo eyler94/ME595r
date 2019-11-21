@@ -30,7 +30,7 @@ class Landmark:
 
 
 class FastSlam:
-    def __init__(self, R2D2, World):
+    def __init__(self, R2D2, World, num_particles=10):
         print("Init")
         # World Properties
         self.landmarks = World.Landmarks
@@ -53,7 +53,7 @@ class FastSlam:
         self.Q_t = np.array([[R2D2.sigma_r ** 2, 0],
                              [0, R2D2.sigma_theta ** 2]])
 
-        self.num_particles = 5
+        self.num_particles = num_particles
         self.num_particles_inv = 1 / self.num_particles
         state = np.array([[R2D2.x0],
                           [R2D2.y0],

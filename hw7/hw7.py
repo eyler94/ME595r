@@ -31,9 +31,9 @@ def wrapper(ang):
 
 # Instantiate World, Robot, Plotter, and ekfslam
 R2D2 = R2D2.R2D2(FoV=np.pi)
-World = World.World(rand=False, num_lm=15)
+World = World.World(rand=True, num_lm=15)
 Plotter = Plotter.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
-fastslam = Fast_SLAM.FastSlam(R2D2, World)
+fastslam = Fast_SLAM.FastSlam(R2D2, World, num_particles=100)
 
 # Set Timeline
 Tf = 20  # Sec
