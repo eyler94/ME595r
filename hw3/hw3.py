@@ -23,8 +23,8 @@ def wrapper(ang):
 # Instantiate World, Robot, Plotter, and UKF
 R2D2 = R2D2.R2D2()
 World = World.World()
-Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, fig_num=1)
-# PlotterUKF = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks, fig_num=2)
+Plotter = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
+# PlotterUKF = PLTTER.Plotter(R2D2.x0, R2D2.y0, R2D2.theta0, World.width, World.height, World.Landmarks)
 UKF = UKF.UKF(R2D2, World)
 
 # Set Timeline
@@ -75,8 +75,8 @@ plt.ion()
 plt.interactive(False)
 
 for iter in range(0, X.size):
-    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter],1)
-    PlotterUKF.update(MU_X[0][iter], MU_Y[0][iter], MU_TH[0][iter],2)
+    Plotter.update(X[0][iter], Y[0][iter], TH[0][iter])
+    # PlotterUKF.update(MU_X[0][iter], MU_Y[0][iter], MU_TH[0][iter])
 
 fig3 = plt.figure(3)
 fig3.clf()
