@@ -1,59 +1,24 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from scipy import linalg
-from copy import deepcopy
 from itertools import permutations as perms
-import pandas as pd
 
-desired_width = 320
-pd.set_option('display.width', desired_width)
-np.set_printoptions(linewidth=desired_width)
-pd.set_option('display.max_columns', 10)
+meas_p1 = np.diag([0.7, 0.3])
+meas_p2 = np.diag([0.3, 0.7])
+predict_mat = np.array([[0.2, 0.8], [0.8, 0.2]])
 
-Three = False
+num_parts = 100000
+step_size = 1 / num_parts
 
-if Three:
-    meas_p1 = np.diag([0.7, 0.3, 0])
-    meas_p2 = np.diag([0.3, 0.7, 0])
-    predict_mat = linalg.block_diag(np.array([[0.2, 0.8], [0.8, 0.2]]), 0)
-
-    num_parts = 100000
-    step_size = 1 / num_parts
-
-    prob = np.ones([3, num_parts + 1])
-    prob[0] = np.arange(0, 1 + step_size, step_size)
-    prob[1] = np.arange(1, 0 - step_size, -step_size)
-    eq = np.array([[-100, 100, 0],
-                   [100, -50, 0],
-                   [0, 0, -1]])
-    eq_u1_u2 = np.array([[-100, 100, 0],
-                         [100, -50, 0]])
-else:
-    meas_p1 = np.diag([0.7, 0.3])
-    meas_p2 = np.diag([0.3, 0.7])
-    predict_mat = np.array([[0.2, 0.8], [0.8, 0.2]])
-
-    num_parts = 100000
-    step_size = 1 / num_parts
-
-    prob = np.ones([2, num_parts + 1])
-    prob[0] = np.arange(0, 1 + step_size, step_size)
-    prob[1] = np.arange(1, 0 - step_size, -step_size)
-    eq = np.zeros([1, 2])
-    eq_u1_u2 = np.array([[-100, 100],
-                         [100, -50]])
-
-DEBUG = False
+prob = np.ones([2, num_parts + 1])
+prob[0] = np.arange(0, 1 + step_size, step_size)
+prob[1] = np.arange(1, 0 - step_size, -step_size)
+eq = np.zeros([1, 2])
+eq_u1_u2 = np.array([[-100, 100],
+                     [100, -50]])
 
 
-def printer(string):
-    if DEBUG:
-        print(string)
-
-
-def pruner(eq_given):  # , special=False):
-    printer("maximizing")
+def pruner(eq_given):
     res = eq_given @ prob
     max_val = np.amax(res, axis=0)
     eqs_used = np.unique(np.argmax(res, axis=0))
@@ -62,7 +27,6 @@ def pruner(eq_given):  # , special=False):
 
 
 def sensing(eq_given):
-    printer("sensing")
     num_max = len(eq_given)
     result_1 = eq_given @ meas_p1
     result_2 = eq_given @ meas_p2
@@ -73,27 +37,19 @@ def sensing(eq_given):
 
 
 def prediction(eq_given):
-    printer("Prediction.")
     eq_temp = eq_given @ predict_mat
-    if Three:
-        eq_temp[:, :-1] -= 1
-    else:
-        eq_temp -= 1
+    eq_temp -= 1
     eq_ready = np.array([*eq_u1_u2, *eq_temp])
     return eq_ready
 
 
-for T in range(4):
+for T in range(20):
     # With Pruning
-    # eq_max = pruner(eq)
-    # eq_sense = pruner(sensing(eq_max))
-    # eq = pruner(prediction(eq_sense))
+    eq_max = pruner(eq)
+    eq_sense = pruner(sensing(eq_max))
+    eq = pruner(prediction(eq_sense))
 
-    # Without Pruning
-    eq_max = eq
-    eq_sense = sensing(eq_max)
-    eq = prediction(eq_sense)
-    # print(eq)
+    # # Without Pruning
+    # eq_sense = sensing(eq)
+    # eq = prediction(eq_sense)
 print(eq, eq.shape)
-
-
